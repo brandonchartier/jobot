@@ -18,7 +18,7 @@
 
 
 (defn parse :private [stream message]
-  (match (pattern/parse message)
+  (match (peg/match pattern/message message)
     [:ping pong]
       (write/pong stream pong)
     [:body nick host chan cmd msg]

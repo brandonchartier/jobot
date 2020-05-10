@@ -13,5 +13,6 @@
                      :host host
                      :path path
                      :query query}]
+  (default query {})
   (string scheme "://" host path (build-query query)))
 

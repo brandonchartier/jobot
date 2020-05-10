@@ -45,8 +45,7 @@
               :path (string/format
                       "/forecast/%s/%s"
                       (config :darksky-key)
-                      lat-long)
-               :query {})]
+                      lat-long))]
     (request/get-request url)))
 
 (defn weather-search [name lat-long]
