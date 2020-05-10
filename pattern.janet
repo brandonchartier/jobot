@@ -8,13 +8,13 @@
     ~{:symbols ,symbols
       :whitespace (some :s)
       :words (+ :w+ :symbols)
-      :whitespace-or-words (+ :whitespace :words)
+      :rest (any 1)
       :me ,(string/format ":%s:" (config :nick))
       :ping (* (constant :ping)
                "PING"
                :s+
                ":"
-               (<- (any :whitespace-or-words)))
+               (<- :rest :pong))
       :priv (* ":"
                (<- (some :w+) :nickname)
                "!"
@@ -28,10 +28,11 @@
                :whitespace
                (<- (some :words) :command))
       :bare (* (constant :bare)
-               :priv)
+               :priv
+               :rest)
       :body (* (constant :body)
                :priv
                :whitespace
-               (<- (some :whitespace-or-words) :message))
+               (<- :rest :message))
       :main (+ :body :bare :ping)}))
 
