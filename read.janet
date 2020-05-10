@@ -1,4 +1,5 @@
 (import ./api)
+(import ./config :prefix "")
 (import ./pattern)
 (import ./write)
 
@@ -11,6 +12,9 @@
 
 (defn weather? :private [cmd]
   (= cmd "weather"))
+
+(defn date? :private [cmd]
+  (or (= cmd "date") (= cmd "ddate")))
 
 
 (defn parse :private [stream message]
@@ -25,7 +29,13 @@
             (write/privmsg stream chan nick url)))
     [:bare nick host chan cmd]
     (cond (weather? cmd)
-          (write/privmsg stream chan nick "the weather"))))
+          (each city (config :cities)
+            (let [name (city :name)
+                  temp (api/weather-search (city :coords))]
+              (write/privmsg stream chan nick (string/format "%s: %s" name temp))))
+          (date? cmd)
+          (let [date (api/ddate)]
+            (write/privmsg stream chan nick date)))))
 
 
 (defn recur [stream]

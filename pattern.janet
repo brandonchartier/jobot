@@ -26,7 +26,6 @@
               :whitespace
               (<- (some :words) :command))}))
 
-
 (def body-pattern :private
   (peg/compile
     ~{:symbols (set "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?")

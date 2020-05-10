@@ -26,3 +26,16 @@
 (defn post-request [url]
   (make-request "POST" url))
 
+
+(defn ddate-request []
+  (def out @"")
+  (def err @"")
+
+  (sh/run ["ddate"]
+          :redirects
+          [[stdout out] [stderr err]])
+
+  (cond (not-empty? out)
+        [:ok out]
+        (not-empty? err)
+        [:error err]))

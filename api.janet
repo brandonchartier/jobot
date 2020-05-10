@@ -1,26 +1,54 @@
 (import ./config :prefix "")
 (import ./request)
-(import uri)
+(import ./uri)
 
 
-(defn sample [xs]
-  (get xs (math/rng-int (math/rng (os/time)) (length xs))))
+(defn sample :private [xs]
+  (get xs
+    (math/rng-int (math/rng (os/time))
+                  (length xs))))
 
-
-(def google-image-url :private
-  "https://www.googleapis.com/customsearch/v1?key=%s&cx=%s&q=%s&searchType=image")
 
 (defn google-image-request :private [query]
-  (let [url (string/format google-image-url 
-                           (config :google-api-key) 
-                           (config :google-cx)
-                           (uri/escape (string/trim query)))]
-    (print url)
+  (let [qs {:key (config :google-api-key)
+            :cx (config :google-cx)
+            :q query
+            :searchType "image"}
+        url (uri/create {:scheme "https"
+                         :host "www.googleapis.com"
+                         :path "/customsearch/v1"
+                         :query qs})]
     (request/get-request url)))
 
 (defn google-image-search [query]
   (let [result (google-image-request query)]
     (match result
       [:ok {"items" items}] (get (sample items) "link")
-      [error err] (do (print err) "not found"))))
+      [:error err] (do (print err) "not found"))))
+
+
+(defn ddate []
+  (let [result (request/ddate-request)]
+    (match result
+      [:ok date] (string/trim date)
+      [:error err] (do (print err) "today"))))
+
+
+(defn weather-request [lat-long]
+  (let [url (uri/create {:scheme "https"
+                         :host "api.darksky.net"
+                         :path (string/format "/forecast/%s/%s"
+                                              (config :darksky-key)
+                                              lat-long)
+                         :query {}})]
+    (request/get-request url)))
+
+(defn weather-search [lat-long]
+  (let [result (weather-request lat-long)]
+    (match result
+      [:ok {"currently" currently}]
+        (string (math/round (get currently "temperature"))
+                "° "
+                (get currently "summary"))
+      [:error err] (do (print err) "no data"))))
 
