@@ -1,18 +1,46 @@
 (import uri)
 
 
-(defn query-reducer :private [acc [k v]]
-  (array/concat acc (string k "=" (uri/escape v))))
+(defn- unparse-scheme [scheme]
+  (if (nil? scheme) "" (string scheme "://")))
 
-(defn build-query :private [query]
-  (let [strings (reduce query-reducer @[] (pairs query))]
-    (string "?" (string/join strings "&"))))
+(defn- unparse-auth [auth]
+  (if (nil? auth) "" (string auth "@")))
+
+(defn- unparse-host [host]
+  (if (nil? host) "" host))
+
+(defn- unparse-port [port]
+  (if (nil? port) "" (string ":" port)))
+
+(defn- unparse-path [path]
+  (if (nil? path) "" path))
+
+(defn- query-reducer [acc [k v]]
+  (array/concat acc (string k "=" (uri/escape (string v)))))
+
+(defn- unparse-query [query]
+  (if (nil? query)
+      ""
+      (let [strings (reduce query-reducer @[] (pairs query))]
+        (string "?" (string/join strings "&")))))
+
+(defn- unparse-hash [hash]
+  (if (nil? hash) "" (string "#" hash)))
 
 
-(defn create [&keys {:scheme scheme
-                     :host host
-                     :path path
-                     :query query}]
-  (default query {})
-  (string scheme "://" host path (build-query query)))
+(defn unparse [&keys {:scheme scheme
+                      :auth auth
+                      :host host
+                      :port port
+                      :path path
+                      :query query
+                      :hash hash}]
+  (string (unparse-scheme scheme)
+          (unparse-auth auth)
+          (unparse-host host)
+          (unparse-port port)
+          (unparse-path path)
+          (unparse-query query)
+          (unparse-hash hash)))
 

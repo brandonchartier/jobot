@@ -4,20 +4,20 @@
 (import ./write)
 
 
-(defn echo? :private [cmd]
+(defn- echo? [cmd]
   (= cmd "echo"))
 
-(defn image? :private [cmd]
+(defn- image? [cmd]
   (or (= cmd "img") (= cmd "image")))
 
-(defn weather? :private [cmd]
+(defn- weather? [cmd]
   (= cmd "weather"))
 
-(defn date? :private [cmd]
+(defn- date? [cmd]
   (or (= cmd "date") (= cmd "ddate")))
 
 
-(defn parse :private [stream message]
+(defn- parse [stream message]
   (match (peg/match pattern/message message)
     [:ping pong]
       (write/pong stream pong)

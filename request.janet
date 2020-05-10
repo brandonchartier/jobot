@@ -1,13 +1,13 @@
 (import json)
 (import sh)
 
-(def not-empty? :private
+(def- not-empty?
   (comp not empty?))
 
-(def curl :private
+(def- curl
   ["curl" "--silent" "--fail" "--show-error"])
 
-(defn make-request :private [method url]
+(defn- make-request [method url]
   (def out @"")
   (def err @"")
 

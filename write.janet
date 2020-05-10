@@ -1,4 +1,4 @@
-(defn write :private [stream message]
+(defn- write [stream message]
   (net/write stream
     (string message "\n")))
 

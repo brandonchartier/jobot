@@ -3,21 +3,22 @@
 (import ./uri)
 
 
-(defn sample :private [xs]
+(defn- sample [xs]
   (get xs
     (math/rng-int (math/rng (os/time))
                   (length xs))))
 
 
-(defn google-image-request :private [query]
+(defn- google-image-request [query]
   (let [qs {:key (config :google-api-key)
             :cx (config :google-cx)
             :q query
             :searchType "image"}
-        url (uri/create :scheme "https"
-                        :host "www.googleapis.com"
-                        :path "/customsearch/v1"
-                        :query qs)]
+        url (uri/unparse
+              :scheme "https"
+              :host "www.googleapis.com"
+              :path "/customsearch/v1"
+              :query qs)]
     (request/get-request url)))
 
 (defn google-image-search [query]
@@ -38,8 +39,8 @@
         (do (print err) "today"))))
 
 
-(defn weather-request [lat-long]
-  (let [url (uri/create
+(defn- weather-request [lat-long]
+  (let [url (uri/unparse
               :scheme "https"
               :host "api.darksky.net"
               :path (string/format
@@ -59,4 +60,3 @@
                 (get currently "summary"))
       [:error err]
         (do (print err) "no data"))))
-

@@ -1,6 +1,6 @@
 (import ./config :prefix "")
 
-(def symbols :private
+(def- symbols
   '(set "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?"))
 
 (def message
