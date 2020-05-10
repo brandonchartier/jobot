@@ -2,7 +2,7 @@
   (net/write stream
     (string message "\n")))
 
-(defn privmsg [stream channel nickname message]
+(defn priv [stream channel nickname message]
   (write stream
     (string/format "PRIVMSG %s :%s: %s"
                    channel
