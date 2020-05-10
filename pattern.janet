@@ -15,16 +15,16 @@
       :whitespace-or-words (+ :whitespace :words)
       :me ,(string/format ":%s:" (config :nick))
       :main (* ":"
-              (<- (some :w+) :nickname)
-              (<- (some :words) :hostname)
-              :whitespace
-              "PRIVMSG"
-              :whitespace
-              (<- (some :words) :channel)
-              :whitespace
-              :me
-              :whitespace
-              (<- (some :words) :command))}))
+               (<- (some :w+) :nickname)
+               (<- (some :words) :hostname)
+               :whitespace
+               "PRIVMSG"
+               :whitespace
+               (<- (some :words) :channel)
+               :whitespace
+               :me
+               :whitespace
+               (<- (some :words) :command))}))
 
 (def body-pattern :private
   (peg/compile
@@ -34,18 +34,18 @@
       :whitespace-or-words (+ :whitespace :words)
       :me ,(string/format ":%s:" (config :nick))
       :main (* ":"
-              (<- (some :w+) :nickname)
-              (<- (some :words) :hostname)
-              :whitespace
-              "PRIVMSG"
-              :whitespace
-              (<- (some :words) :channel)
-              :whitespace
-              :me
-              :whitespace
-              (<- (some :words) :command)
-              :whitespace
-              (<- (some :whitespace-or-words) :message))}))
+               (<- (some :w+) :nickname)
+               (<- (some :words) :hostname)
+               :whitespace
+               "PRIVMSG"
+               :whitespace
+               (<- (some :words) :channel)
+               :whitespace
+               :me
+               :whitespace
+               (<- (some :words) :command)
+               :whitespace
+               (<- (some :whitespace-or-words) :message))}))
 
 
 (defn parse [message]

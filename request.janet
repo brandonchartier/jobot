@@ -16,9 +16,9 @@
           [[stdout out] [stderr err]])
 
   (cond (not-empty? out)
-        [:ok (json/decode out)]
+          [:ok (json/decode out)]
         (not-empty? err)
-        [:error err]))
+          [:error err]))
 
 (defn get-request [url]
   (make-request "GET" url))
@@ -36,6 +36,6 @@
           [[stdout out] [stderr err]])
 
   (cond (not-empty? out)
-        [:ok out]
+          [:ok out]
         (not-empty? err)
-        [:error err]))
+          [:error err]))

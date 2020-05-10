@@ -9,9 +9,9 @@
     (string "?" (string/join strings "&"))))
 
 
-(defn create [{:scheme scheme
-                  :host host
-                  :path path
-                  :query query}]
+(defn create [&keys {:scheme scheme
+                     :host host
+                     :path path
+                     :query query}]
   (string scheme "://" host path (build-query query)))
 
