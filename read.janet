@@ -20,21 +20,21 @@
 (defn parse :private [stream message]
   (match (pattern/parse message)
     [:ping pong]
-    (write/pong stream pong)
+      (write/pong stream pong)
     [:body nick host chan cmd msg]
-    (cond (echo? cmd)
-            (write/priv stream chan nick msg)
-          (image? cmd)
-            (let [url (api/google-image-search msg)]
-              (write/priv stream chan nick url)))
+      (cond (echo? cmd)
+              (write/priv stream chan nick msg)
+            (image? cmd)
+              (let [url (api/google-image-search msg)]
+                (write/priv stream chan nick url)))
     [:bare nick host chan cmd]
-    (cond (weather? cmd)
-            (each city (config :cities)
-              (let [temp (api/weather-search (city :name) (city :coords))]
-                (write/priv stream chan nick temp)))
-          (date? cmd)
-            (let [date (api/ddate)]
-              (write/priv stream chan nick date)))))
+      (cond (weather? cmd)
+              (each city (config :cities)
+                (let [temp (api/weather-search (city :name) (city :coords))]
+                  (write/priv stream chan nick temp)))
+            (date? cmd)
+              (let [date (api/ddate)]
+                (write/priv stream chan nick date)))))
 
 
 (defn recur [stream]
