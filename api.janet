@@ -1,6 +1,5 @@
 (import ./config :prefix "")
 (import ./request)
-(import ./uri)
 
 
 (defn- sample
@@ -10,27 +9,12 @@
                      (length ind))))
 
 
-(defn google-image-request
-  "Provided a search term,
-   returns the JSON result of a Google image search."
-  [search-term]
-  (let [qs {:key (config :google-api-key)
-            :cx (config :google-cx)
-            :q search-term
-            :searchType "image"}
-        url (uri/unparse
-              :scheme "https"
-              :host "www.googleapis.com"
-              :path "/customsearch/v1"
-              :query qs)]
-    (request/get-request url)))
-
-(defn google-image-search
+(defn google-image
   "Provided a search term,
    pattern matches on the response from the request,
    and returns a link."
   [search-term]
-  (let [result (google-image-request search-term)]
+  (let [result (request/google-image search-term)]
     (match result
       [:ok {"items" items}]
         (get (sample items) "link")
@@ -41,7 +25,7 @@
 (defn ddate
   "Returns the current Discordian date."
   []
-  (let [result (request/ddate-request)]
+  (let [result (request/ddate)]
     (match result
       [:ok date]
         (string/trim date)
@@ -49,26 +33,12 @@
         (do (when (config :debug) (pp err)) "today"))))
 
 
-(defn- weather-request
-  "Provided a lat,long string,
-   returns the current temperature of location,
-   as a JSON result from a Dark Sky lookup."
-  [lat-long]
-  (let [url (uri/unparse
-              :scheme "https"
-              :host "api.darksky.net"
-              :path (string/format
-                      "/forecast/%s/%s"
-                      (config :darksky-key)
-                      lat-long))]
-    (request/get-request url)))
-
-(defn weather-search
+(defn weather
   "Provided the name of a city and its lat,long string,
    pattern matches on the response from the request,
    and returns a description of the weather."
   [name lat-long]
-  (let [result (weather-request lat-long)]
+  (let [result (request/weather lat-long)]
     (match result
       [:ok {"currently" currently}]
         (string name

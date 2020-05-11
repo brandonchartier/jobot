@@ -1,6 +1,6 @@
 (import ./api)
 (import ./config :prefix "")
-(import ./pattern)
+(import ./grammar)
 (import ./write)
 
 
@@ -21,20 +21,20 @@
   "Pattern matches on the result of the IRC message PEG,
    writes based on the command provided to the stream."
   [stream message]
-  (match (peg/match pattern/message message)
+  (match (peg/match grammar/message message)
     [:ping pong]
       (write/pong stream pong)
     [:body nick host chan cmd msg]
       (cond (echo? cmd)
               (write/priv stream chan nick msg)
             (image? cmd)
-              (let [url (api/google-image-search msg)]
+              (let [url (api/google-image msg)]
                 (write/priv stream chan nick url)))
     [:bare nick host chan cmd]
       (cond (weather? cmd)
               # TODO: Throttle
               (each city (config :cities)
-                (let [temp (api/weather-search (city :name) (city :coords))]
+                (let [temp (api/weather (city :name) (city :coords))]
                   (write/priv stream chan nick temp)))
             (date? cmd)
               (let [date (api/ddate)]
