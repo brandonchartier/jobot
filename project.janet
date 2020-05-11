@@ -9,6 +9,6 @@
      "sh"
      "json"])
 
-(declare-source
+(declare-executable
   :name "jobot"
-  :source ["main.janet"])
+  :entry "main.janet")

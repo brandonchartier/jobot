@@ -48,6 +48,8 @@
   (let [message (net/read stream 2048)]
     (if (nil? message)
         (net/close stream)
-        (do (print message)
+        (do (when (config :debug)
+              (pp message)
+              (print "--"))
             (parse stream message)
             (recur stream)))))

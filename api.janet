@@ -35,7 +35,7 @@
       [:ok {"items" items}]
         (get (sample items) "link")
       [:error err]
-        (do (print err) "not found"))))
+        (do (when (config :debug) (pp err)) "not found"))))
 
 
 (defn ddate
@@ -46,7 +46,7 @@
       [:ok date]
         (string/trim date)
       [:error err]
-        (do (print err) "today"))))
+        (do (when (config :debug) (pp err)) "today"))))
 
 
 (defn- weather-request
@@ -77,4 +77,4 @@
                 "° "
                 (get currently "summary"))
       [:error err]
-        (do (print err) "no data"))))
+        (do (when (config :debug) (pp err)) "no data"))))

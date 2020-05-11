@@ -1,5 +1,6 @@
 (def config
-  {:server "irc.example.org"
+  {:debug true
+   :server "irc.example.org"
    :port "6667"
    :channel "#example"
    :nick "my_nickname"

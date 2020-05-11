@@ -5,37 +5,41 @@
   "Symbols used for parsing URLs and user-provided data."
   '(set "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?"))
 
+(def- me
+  "Formatted nickname for retrieving messages sent to client."
+  (string ":" (config :nick) ":"))
+
 (def message
   "Grammar for parsing IRC messages."
   (peg/compile
     ~{:symbols ,symbols
       :whitespace (some :s)
-      :words (+ :w+ :symbols)
-      :rest (any 1)
-      :me ,(string ":" (config :nick) ":")
+      :glyph (+ :w :symbols)
+      :glyphs (some :glyph)
+      :glyphs-or-spaces (some (+ :glyph " "))
+      :me ,me
       :ping (* (constant :ping)
                "PING"
-               :s+
+               :whitespace
                ":"
-               (<- :rest :pong))
+               (<- :glyphs :pong))
       :priv (* ":"
                (<- (some :w+) :nickname)
                "!"
-               (<- (some :words) :hostname)
+               (<- :glyphs :hostname)
                :whitespace
                "PRIVMSG"
                :whitespace
-               (<- (some :words) :channel)
+               (<- :glyphs :channel)
                :whitespace
                :me
                :whitespace
-               (<- (some :words) :command))
+               (<- :glyphs :command))
       :bare (* (constant :bare)
-               :priv
-               :rest)
+               :priv)
       :body (* (constant :body)
                :priv
                :whitespace
-               (<- :rest :message))
+               (<- :glyphs-or-spaces :message))
       :main (+ :body :bare :ping)}))
 

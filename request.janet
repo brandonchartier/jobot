@@ -6,24 +6,22 @@
   (comp not empty?))
 
 
-(def- curl
-  "Provide these options to curl:
-   1. --silent: removes the progress bar usally sent to stdout.
-   2. --fail and --show-error:
-      use in combination to send HTTP errors to stderr."
-  ["curl" "--silent" "--fail" "--show-error"])
-
 (defn- make-request
   "Creates a curl process and returns the result,
    for pattern matching on :ok or :error.
-   Decode:ok responses as JSON."
+   Decode :ok responses as JSON.
+
+   Provide these options to curl:
+   1. --silent: removes the progress bar normally sent to stdout.
+   2. --fail and --show-error:
+      use in combination to send HTTP errors to stderr."
   [method url]
   (def out @"")
   (def err @"")
 
-  (sh/run [(splice curl) "-X" method url]
-          :redirects
-          [[stdout out] [stderr err]])
+  (sh/run curl --silent --fail --show-error -X ,method ,url
+    > [stdout out]
+    > [stderr err])
 
   (cond (not-empty? out)
           [:ok (json/decode out)]
@@ -50,9 +48,9 @@
   (def out @"")
   (def err @"")
 
-  (sh/run ["ddate"]
-          :redirects
-          [[stdout out] [stderr err]])
+  (sh/run ddate
+    > [stdout out]
+    > [stderr err])
 
   (cond (not-empty? out)
           [:ok out]
