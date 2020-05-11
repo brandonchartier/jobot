@@ -32,10 +32,10 @@
                 (write/priv stream chan nick url)))
     [:bare nick host chan cmd]
       (cond (weather? cmd)
-              # TODO: Throttle
               (each city (config :cities)
-                (let [temp (api/weather (city :name) (city :coords))]
-                  (write/priv stream chan nick temp)))
+                (do (os/sleep 0.5)
+                    (let [temp (api/weather (city :name) (city :coords))]
+                      (write/priv stream chan nick temp))))
             (date? cmd)
               (let [date (api/ddate)]
                 (write/priv stream chan nick date)))))
