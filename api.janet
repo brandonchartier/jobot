@@ -3,16 +3,20 @@
 (import ./uri)
 
 
-(defn- sample [xs]
-  (get xs
-    (math/rng-int (math/rng (os/time))
-                  (length xs))))
+(defn- sample
+  "Returns a random item from an indexed data structure."
+  [ind]
+  (ind (math/rng-int (math/rng (os/cryptorand 10))
+                     (length ind))))
 
 
-(defn- google-image-request [query]
+(defn google-image-request
+  "Provided a search term,
+   returns the JSON result of a Google image search."
+  [search-term]
   (let [qs {:key (config :google-api-key)
             :cx (config :google-cx)
-            :q query
+            :q search-term
             :searchType "image"}
         url (uri/unparse
               :scheme "https"
@@ -21,8 +25,12 @@
               :query qs)]
     (request/get-request url)))
 
-(defn google-image-search [query]
-  (let [result (google-image-request query)]
+(defn google-image-search
+  "Provided a search term,
+   pattern matches on the response from the request,
+   and returns a link."
+  [search-term]
+  (let [result (google-image-request search-term)]
     (match result
       [:ok {"items" items}]
         (get (sample items) "link")
@@ -30,7 +38,9 @@
         (do (print err) "not found"))))
 
 
-(defn ddate []
+(defn ddate
+  "Returns the current Discordian date."
+  []
   (let [result (request/ddate-request)]
     (match result
       [:ok date]
@@ -39,7 +49,11 @@
         (do (print err) "today"))))
 
 
-(defn- weather-request [lat-long]
+(defn- weather-request
+  "Provided a lat,long string,
+   returns the current temperature of location,
+   as a JSON result from a Dark Sky lookup."
+  [lat-long]
   (let [url (uri/unparse
               :scheme "https"
               :host "api.darksky.net"
@@ -49,7 +63,11 @@
                       lat-long))]
     (request/get-request url)))
 
-(defn weather-search [name lat-long]
+(defn weather-search
+  "Provided the name of a city and its lat,long string,
+   pattern matches on the response from the request,
+   and returns a description of the weather."
+  [name lat-long]
   (let [result (weather-request lat-long)]
     (match result
       [:ok {"currently" currently}]

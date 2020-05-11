@@ -29,13 +29,15 @@
   (if (nil? hash) "" (string "#" hash)))
 
 
-(defn unparse [&keys {:scheme scheme
-                      :auth auth
-                      :host host
-                      :port port
-                      :path path
-                      :query query
-                      :hash hash}]
+(defn unparse
+  "Creates a URI from optional keys."
+  [&keys {:scheme scheme
+          :auth auth
+          :host host
+          :port port
+          :path path
+          :query query
+          :hash hash}]
   (string (unparse-scheme scheme)
           (unparse-auth auth)
           (unparse-host host)

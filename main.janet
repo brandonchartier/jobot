@@ -3,7 +3,11 @@
 (import ./write)
 
 
-(defn main [&]
+(defn main
+  "Connects to a host and port, creating a duplex stream
+   and begins the IRC connection process;
+   passes the stream to a loop for further read processing."
+  [&]
   (let [channel (config :channel)
         nick (config :nick)
         port (config :port)

@@ -17,7 +17,10 @@
   (or (= cmd "date") (= cmd "ddate")))
 
 
-(defn- parse [stream message]
+(defn- parse
+  "Pattern matches on the result of the IRC message PEG,
+   writes based on the command provided to the stream."
+  [stream message]
   (match (peg/match pattern/message message)
     [:ping pong]
       (write/pong stream pong)
@@ -29,6 +32,7 @@
                 (write/priv stream chan nick url)))
     [:bare nick host chan cmd]
       (cond (weather? cmd)
+              # TODO: Throttle
               (each city (config :cities)
                 (let [temp (api/weather-search (city :name) (city :coords))]
                   (write/priv stream chan nick temp)))
@@ -37,7 +41,10 @@
                 (write/priv stream chan nick date)))))
 
 
-(defn recur [stream]
+(defn recur
+  "Loop over the stream and parse the incoming messages,
+   close the connection in case of a failure."
+  [stream]
   (let [message (net/read stream 2048)]
     (if (nil? message)
         (net/close stream)
