@@ -4,10 +4,10 @@
   :author "Brandon Chartier"
   :url "https://github.com/brandonchartier/jobot"
   :repo "git+https://github.com/brandonchartier/jobot.git"
-  :dependencies
-    ["uri"
-     "sh"
-     "json"])
+  :dependencies ["uri"
+                 "sh"
+                 "json"
+                 "https://github.com/brandonchartier/janet-queue"])
 
 (declare-executable
   :name "jobot"

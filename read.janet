@@ -43,10 +43,13 @@
       (write/priv stream chan nick url))))
 
 
-(defn- parse
+(defn- process
   "Pattern matches on the result of the IRC message grammar,
    replies based on the command provided to the stream."
   [stream message]
+  (when (config :debug)
+    (print "---Read---")
+    (pp message))
   (match (peg/match grammar/message message)
     [:ping pong]
     (write/pong stream pong)
@@ -63,12 +66,7 @@
   (let [message (net/read stream 2048)]
     (if (nil? message)
       (net/close stream)
-      (do
-        (queue/push message)
-        (queue/process
-          (fn [line]
-            (when (config :debug)
-              (print "---Read---")
-              (pp line))
-            (parse stream line)))
+      (let [message-queue (queue/new)]
+        (queue/split-and-add message-queue message)
+        (queue/read-until-end message-queue (partial process stream))
         (recur stream)))))

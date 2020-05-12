@@ -1,7 +1,10 @@
-(var- *trailing* "")
-(var- *messages* @[])
+(import queue)
 
+
+(var- *trailing* "")
 (def- find-pattern "\r\n")
+
+(def new queue/new)
 
 (defn- split-after [str idx]
   (let [len (length find-pattern)
@@ -9,23 +12,17 @@
         tail (string/slice str (+ idx len))]
     [head tail]))
 
-(defn push [bytes]
+(defn split-and-add [queue bytes]
   (let [val (string *trailing* bytes)
         idx (string/find find-pattern val)]
     (set *trailing* "")
     (if (nil? idx)
       (set *trailing* val)
       (let [[head tail] (split-after val idx)]
-        (array/concat *messages* head)
-        (push tail)))))
+        (queue/enqueue queue head)
+        (split-and-add queue tail)))))
 
-(defn read []
-  (unless (empty? *messages*)
-    (let [head (*messages* 0)]
-      (array/remove *messages* 0)
-      head)))
-
-(defn process [f]
-  (when-let [line (read)]
-    (f line)
-    (process f)))
+(defn read-until-end [queue f]
+  (when-let [item (queue/dequeue queue)]
+    (f item)
+    (read-until-end queue f)))
