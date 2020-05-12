@@ -19,11 +19,11 @@
 (defn- query-reducer [acc [k v]]
   (array/concat acc (string k "=" (uri/escape (string v)))))
 
-(defn- unparse-query [query]
-  (if (nil? query)
-      ""
-      (let [strings (reduce query-reducer @[] (pairs query))]
-        (string "?" (string/join strings "&")))))
+(defn- unparse-query [dict]
+  (if (nil? dict)
+    ""
+    (let [strings (reduce query-reducer @[] (pairs dict))]
+      (string "?" (string/join strings "&")))))
 
 (defn- unparse-hash [hash]
   (if (nil? hash) "" (string "#" hash)))

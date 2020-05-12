@@ -21,29 +21,30 @@
   (def out @"")
   (def err @"")
 
-  (sh/run curl --silent --fail --show-error -X ,method ,url
+  (sh/run
+    curl --silent --fail --show-error -X ,method ,url
     > [stdout out]
     > [stderr err])
 
-  (cond (not-empty? out)
-          [:ok (json/decode out)]
-        (not-empty? err)
-          [:error err]))
+  (cond
+    (not-empty? out)
+    [:ok (json/decode out)]
+    (not-empty? err)
+    [:error err]))
 
 
 (defn google-image
   "Provided a search term,
    returns the JSON result of a Google image search."
   [search-term]
-  (let [qs {:key (config :google-api-key)
-            :cx (config :google-cx)
-            :q search-term
-            :searchType "image"}
-        url (uri/unparse
+  (let [url (uri/unparse
               :scheme "https"
               :host "www.googleapis.com"
               :path "/customsearch/v1"
-              :query qs)]
+              :query {:key (config :google-key)
+                      :cx (config :google-cx)
+                      :q search-term
+                      :searchType "image"})]
     (curl "GET" url)))
 
 
@@ -69,11 +70,13 @@
   (def out @"")
   (def err @"")
 
-  (sh/run ddate
+  (sh/run
+    ddate
     > [stdout out]
     > [stderr err])
 
-  (cond (not-empty? out)
-          [:ok out]
-        (not-empty? err)
-          [:error err]))
+  (cond
+    (not-empty? out)
+    [:ok out]
+    (not-empty? err)
+    [:error err]))
