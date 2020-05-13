@@ -31,7 +31,7 @@
 
 (defn google-image
   "Provided a search term,
-   returns the JSON result of a Google image search."
+   makes a request to Google APIS and returns a link."
   [search-term]
   (let [url (uri/unparse
               :scheme "https"
@@ -41,14 +41,18 @@
                       :cx (config :google-cx)
                       :q search-term
                       :searchType "image"})]
-    (curl "GET" url)))
+    (match (curl "GET" url)
+      [:ok {"items" items}]
+      (in (u/sample items) "link")
+      [:error err]
+      (u/debugging err "not found"))))
 
 
 (defn weather
-  "Provided a lat,long string,
-   returns the current temperature of location,
-   as a JSON result from a Dark Sky lookup."
-  [lat-long]
+  "Provided the name of a city and its lat,long string,
+   makes a request to the Dark Sky API,
+   returning a description of the weather."
+  [name lat-long]
   (let [url (uri/unparse
               :scheme "https"
               :host "api.darksky.net"
@@ -56,12 +60,20 @@
                       "/forecast/%s/%s"
                       (config :darksky-key)
                       lat-long))]
-    (curl "GET" url)))
+    (match (curl "GET" url)
+      [:ok {"currently" current}]
+      (string/format
+        "%s: %d° %s"
+        name
+        (math/round (in current "temperature"))
+        (in current "summary"))
+      [:error err]
+      (u/debugging err "not found"))))
 
 
 (defn ddate
-  "Creates a ddate process and returns the result,
-   for pattern matching on :ok or :error."
+  "Creates a ddate process and
+   returns the Discordian date."
   []
   (def out @"")
   (def err @"")
@@ -72,6 +84,6 @@
 
   (cond
     (u/not-empty? out)
-    [:ok out]
+    (string/trim out)
     (u/not-empty? err)
-    [:error err]))
+    (u/debugging err "today")))

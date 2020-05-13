@@ -1,7 +1,7 @@
-(import ./api)
 (import ./config :prefix "")
 (import ./grammar)
 (import ./queue)
+(import ./request)
 (import ./utility :as u)
 (import ./write)
 
@@ -25,11 +25,11 @@
   [stream nick chan cmd]
   (cond
     (date? cmd)
-    (let [date (api/ddate)]
+    (let [date (request/ddate)]
       (write/priv stream chan nick date))
     (weather? cmd)
     (each city (config :cities)
-      (let [temp (api/weather (city :name) (city :coords))]
+      (let [temp (request/weather (city :name) (city :coords))]
         (write/priv stream chan nick temp)))))
 
 (defn- body-handler
@@ -40,7 +40,7 @@
     (echo? cmd)
     (write/priv stream chan nick msg)
     (image? cmd)
-    (let [url (api/google-image msg)]
+    (let [url (request/google-image msg)]
       (write/priv stream chan nick url))))
 
 
