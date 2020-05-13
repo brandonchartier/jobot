@@ -1,6 +1,5 @@
-(import ./config :prefix "")
 (import ./request)
-(import ./utility :prefix "")
+(import ./utility :as u)
 
 
 (defn google-image
@@ -10,9 +9,9 @@
   [search-term]
   (match (request/google-image search-term)
     [:ok {"items" items}]
-    (in (sample items) "link")
+    (in (u/sample items) "link")
     [:error err]
-    (debugging err "not found")))
+    (u/debugging err "not found")))
 
 
 (defn ddate
@@ -22,7 +21,7 @@
     [:ok date]
     (string/trim date)
     [:error err]
-    (debugging err "today")))
+    (u/debugging err "today")))
 
 
 (defn weather
@@ -38,4 +37,4 @@
       (math/round (in current "temperature"))
       (in current "summary"))
     [:error err]
-    (debugging err "not found")))
+    (u/debugging err "not found")))

@@ -1,5 +1,5 @@
 (import ./config :prefix "")
-(import ./utility :prefix "")
+(import ./utility :as u)
 
 
 (defn- write
@@ -7,7 +7,7 @@
    and sleeps for :delay seconds to avoid flooding."
   [stream message]
   (let [line (string message "\r\n")]
-    (debugging line)
+    (u/debugging line)
     (net/write stream line)
     (os/sleep (in config :delay 0.5))))
 

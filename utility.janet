@@ -1,11 +1,11 @@
 (import ./config :prefix "")
 
+
 (defn debugging
   "Prints error message if debugging is enabled,
    returns an optional value."
   [message &opt value]
-  (when (config :debug)
-    (pp message))
+  (when (config :debug) (pp message))
   value)
 
 (defn sample

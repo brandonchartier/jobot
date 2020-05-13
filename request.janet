@@ -1,8 +1,8 @@
 (import ./config :prefix "")
 (import ./uri)
-(import ./utility :prefix "")
+(import ./utility :as u)
 (import json)
-(import sh)
+(import process)
 
 
 (defn- curl
@@ -18,15 +18,14 @@
   (def out @"")
   (def err @"")
 
-  (sh/run
-    curl --silent --fail --show-error -X ,method ,url
-    > [stdout out]
-    > [stderr err])
+  (process/run
+    ["curl" "--silent" "--fail" "--show-error" "-X" method url]
+    :redirects [[stdout out] [stderr err]])
 
   (cond
-    (not-empty? out)
+    (u/not-empty? out)
     [:ok (json/decode out)]
-    (not-empty? err)
+    (u/not-empty? err)
     [:error err]))
 
 
@@ -67,13 +66,12 @@
   (def out @"")
   (def err @"")
 
-  (sh/run
-    ddate
-    > [stdout out]
-    > [stderr err])
+  (process/run
+    ["ddate"]
+    :redirects [[stdout out] [stderr err]])
 
   (cond
-    (not-empty? out)
+    (u/not-empty? out)
     [:ok out]
-    (not-empty? err)
+    (u/not-empty? err)
     [:error err]))

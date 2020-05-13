@@ -2,7 +2,7 @@
 (import ./config :prefix "")
 (import ./grammar)
 (import ./queue)
-(import ./utility :prefix "")
+(import ./utility :as u)
 (import ./write)
 
 
@@ -48,7 +48,7 @@
   "Pattern matches on the result of the IRC message grammar,
    replies based on the command provided to the stream."
   [stream message]
-  (debugging message)
+  (u/debugging message)
   (match (peg/match grammar/message message)
     [:ping pong]
     (write/pong stream pong)
