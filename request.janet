@@ -1,11 +1,8 @@
 (import ./config :prefix "")
 (import ./uri)
+(import ./utility :prefix "")
 (import json)
 (import sh)
-
-
-(def- not-empty?
-  (comp not empty?))
 
 
 (defn- curl

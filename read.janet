@@ -2,8 +2,12 @@
 (import ./config :prefix "")
 (import ./grammar)
 (import ./queue)
+(import ./utility :prefix "")
 (import ./write)
 
+
+(defn- date? [cmd]
+  (or (= cmd "date") (= cmd "ddate")))
 
 (defn- echo? [cmd]
   (= cmd "echo"))
@@ -13,9 +17,6 @@
 
 (defn- weather? [cmd]
   (= cmd "weather"))
-
-(defn- date? [cmd]
-  (or (= cmd "date") (= cmd "ddate")))
 
 
 (defn- bare-handler
@@ -47,9 +48,7 @@
   "Pattern matches on the result of the IRC message grammar,
    replies based on the command provided to the stream."
   [stream message]
-  (when (config :debug)
-    (print "---Read---")
-    (pp message))
+  (debugging message)
   (match (peg/match grammar/message message)
     [:ping pong]
     (write/pong stream pong)

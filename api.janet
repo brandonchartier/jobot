@@ -1,22 +1,6 @@
 (import ./config :prefix "")
 (import ./request)
-
-
-(defn- debug
-  "Prints error message if debugging is enabled,
-   returns an optional value."
-  [err &opt val]
-  (when (config :debug)
-    (pp err))
-  val)
-
-(defn- sample
-  "Returns a random item from an indexed data structure."
-  [ind]
-  (let [rdm (os/cryptorand 10)
-        len (length ind)
-        idx (math/rng-int (math/rng rdm) len)]
-    (in ind idx)))
+(import ./utility :prefix "")
 
 
 (defn google-image
@@ -28,7 +12,7 @@
     [:ok {"items" items}]
     (in (sample items) "link")
     [:error err]
-    (debug err "not found")))
+    (debugging err "not found")))
 
 
 (defn ddate
@@ -38,7 +22,7 @@
     [:ok date]
     (string/trim date)
     [:error err]
-    (debug err "today")))
+    (debugging err "today")))
 
 
 (defn weather
@@ -54,4 +38,4 @@
       (math/round (in current "temperature"))
       (in current "summary"))
     [:error err]
-    (debug err "not found")))
+    (debugging err "not found")))

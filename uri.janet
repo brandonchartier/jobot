@@ -30,7 +30,7 @@
 
 
 (defn unparse
-  "Creates a URI from optional keys."
+  "Creates a URI from keyword arguments."
   [&keys {:scheme scheme
           :auth auth
           :host host
