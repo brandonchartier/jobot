@@ -1,8 +1,6 @@
 (import queue)
 
 
-(var- *trailing* "")
-
 (def new queue/new)
 
 (defn- split-after
@@ -10,19 +8,20 @@
    after the specified pattern."
   [str idx pattern]
   (let [len (length pattern)
-        head (string/slice str 0 (+ idx len))
-        tail (string/slice str (+ idx len))]
+        head (take (+ idx len) str)
+        tail (drop (+ idx len) str)]
     [head tail]))
 
 (defn split-and-add
-  "Splits bytes on newlines and adds them to a queue."
-  [queue bytes]
+  "Splits bytes on newlines and adds them to a queue,
+   returning any leftover bytes."
+  [queue bytes &opt acc]
+  (default acc "")
   (let [pat "\r\n"
-        val (string *trailing* bytes)
+        val (string acc bytes)
         idx (string/find pat val)]
-    (set *trailing* "")
     (if (nil? idx)
-      (set *trailing* val)
+      val
       (let [[head tail] (split-after val idx pat)]
         (queue/enqueue queue head)
         (split-and-add queue tail)))))

@@ -1,4 +1,4 @@
-(import ./config :prefix "")
+(import ./config :as c)
 
 
 (def- symbols
@@ -13,14 +13,15 @@
       :glyph (+ :w :symbols)
       :glyphs (some :glyph)
       :glyphs-or-spaces (some (+ :glyph " "))
-      :mention (* ,(config :nick) (any ":"))
+      :nickname (some (+ :w (set "_{}[]^")))
+      :mention (* ,(c/config :nick) (any ":"))
       :ping (* (constant :ping)
                "PING"
                :whitespace
                ":"
                (<- :glyphs :pong))
       :priv (* ":"
-               (<- (some :w) :nickname)
+               (<- :nickname)
                "!"
                (<- :glyphs :hostname)
                :whitespace

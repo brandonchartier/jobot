@@ -1,4 +1,4 @@
-(import ./config :prefix "")
+(import ./config :as c)
 (import ./read)
 (import ./write)
 
@@ -8,10 +8,10 @@
    and begins the IRC connection process;
    passes the stream to a loop for further read processing."
   [&]
-  (let [channels (config :channels)
-        nick (config :nick)
-        port (config :port)
-        server (config :server)
+  (let [channels (c/config :channels)
+        nick (c/config :nick)
+        port (c/config :port)
+        server (c/config :server)
         stream (net/connect server port)]
     (write/user stream nick)
     (write/nick stream nick)

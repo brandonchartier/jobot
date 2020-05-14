@@ -1,8 +1,8 @@
-(import ./config :prefix "")
+(import ./config :as c)
 (import ./grammar)
+(import ./helper :as h)
 (import ./queue)
 (import ./request)
-(import ./utility :as u)
 (import ./write)
 
 
@@ -28,7 +28,7 @@
     (let [date (request/ddate)]
       (write/priv stream chan nick date))
     (weather? cmd)
-    (each city (config :cities)
+    (each city (c/config :cities)
       (let [temp (request/weather (city :name) (city :coords))]
         (write/priv stream chan nick temp)))))
 
@@ -48,7 +48,7 @@
   "Pattern matches on the result of the IRC message grammar,
    replies based on the command provided to the stream."
   [stream message]
-  (u/debugging message)
+  (h/log message)
   (match (peg/match grammar/message message)
     [:ping pong]
     (write/pong stream pong)
@@ -61,11 +61,11 @@
 (defn recur
   "Loop over the stream and parse the incoming messages,
    close the connection in case of a failure."
-  [stream]
+  [stream &opt acc]
   (let [message (net/read stream 2048)]
     (if (nil? message)
       (net/close stream)
-      (let [message-queue (queue/new)]
-        (queue/split-and-add message-queue message)
+      (let [message-queue (queue/new)
+            chunk (queue/split-and-add message-queue message acc)]
         (queue/read-until-end message-queue (partial process stream))
-        (recur stream)))))
+        (recur stream chunk)))))

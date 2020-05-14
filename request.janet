@@ -1,6 +1,6 @@
-(import ./config :prefix "")
+(import ./config :as c)
+(import ./helper :as h)
 (import ./uri)
-(import ./utility :as u)
 (import json)
 (import process)
 
@@ -23,9 +23,9 @@
     :redirects [[stdout out] [stderr err]])
 
   (cond
-    (u/not-empty? out)
+    (h/not-empty? out)
     [:ok (json/decode out)]
-    (u/not-empty? err)
+    (h/not-empty? err)
     [:error err]))
 
 
@@ -37,15 +37,15 @@
               :scheme "https"
               :host "www.googleapis.com"
               :path "/customsearch/v1"
-              :query {:key (config :google-key)
-                      :cx (config :google-cx)
+              :query {:key (c/config :google-key)
+                      :cx (c/config :google-cx)
                       :q search-term
                       :searchType "image"})]
     (match (curl "GET" url)
       [:ok {"items" items}]
-      (in (u/sample items) "link")
+      (in (h/sample items) "link")
       [:error err]
-      (u/debugging err "not found"))))
+      (h/log err "not found"))))
 
 
 (defn weather
@@ -58,7 +58,7 @@
               :host "api.darksky.net"
               :path (string/format
                       "/forecast/%s/%s"
-                      (config :darksky-key)
+                      (c/config :darksky-key)
                       lat-long))]
     (match (curl "GET" url)
       [:ok {"currently" current}]
@@ -68,7 +68,7 @@
         (math/round (in current "temperature"))
         (in current "summary"))
       [:error err]
-      (u/debugging err "not found"))))
+      (h/log err "not found"))))
 
 
 (defn ddate
@@ -83,7 +83,7 @@
     :redirects [[stdout out] [stderr err]])
 
   (cond
-    (u/not-empty? out)
+    (h/not-empty? out)
     (string/trim out)
-    (u/not-empty? err)
-    (u/debugging err "today")))
+    (h/not-empty? err)
+    (h/log err "today")))
