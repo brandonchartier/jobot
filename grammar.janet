@@ -4,6 +4,7 @@
   '(* "\r" "\n"))
 
 (def message
+  "Grammar for parsing IRC messages."
   (peg/compile
     ~{:crlf ,crlf
       :tags (* (constant :tags)
@@ -39,6 +40,7 @@
                :crlf)}))
 
 (def mention
+  "Grammar for parsing requests."
   (peg/compile
     ~{:crlf ,crlf
       :rule (* (constant :rule)

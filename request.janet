@@ -4,6 +4,12 @@
 (import json)
 (import process)
 
+(def no-result "No result.")
+(def not-found "Not found.")
+
+(def sources
+  (string/join (c/config :news-sources) ","))
+
 (defn ddate
   "Creates a ddate process and
    returns the Discordian date."
@@ -19,7 +25,8 @@
     (h/not-empty? out)
     (string/trim out)
     (h/not-empty? err)
-    (h/log err "today")))
+    (h/log err not-found)))
+
 
 (defn- curl
   "Creates a curl process and returns the result,
@@ -58,9 +65,11 @@
                       :searchType "image"})]
     (match (curl "GET" url)
       [:ok {"items" items}]
-      (in (h/sample items) "link")
+      (if (h/not-empty? items)
+        (in (h/sample items) "link")
+        (h/log no-result not-found))
       [:error err]
-      (h/log err "not found"))))
+      (h/log err not-found))))
 
 (defn weather
   "Provided the name of a city and its lat,long string,
@@ -82,22 +91,24 @@
         (math/round (in current "temperature"))
         (in current "summary"))
       [:error err]
-      (h/log err "not found"))))
+      (h/log err not-found))))
+
 
 (defn news
-  [query]
+  "Creates a request to News API
+   and returns a random headline."
+  []
   (let [url (uri/unparse
               :scheme "https"
               :host "newsapi.org"
               :path "/v2/top-headlines"
               :query {:apiKey (c/config :news-key)
-                      :country "us"
-                      :q query})]
+                      :sources sources})]
     (pp url)
     (match (curl "GET" url)
       [:ok {"articles" articles}]
       (if (h/not-empty? articles)
         (in (h/sample articles) "title")
-        "not found")
+        (h/log no-result not-found))
       [:error err]
-      (h/log err "not found"))))
+      (h/log err not-found))))

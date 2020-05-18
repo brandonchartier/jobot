@@ -17,3 +17,6 @@
 
 (def not-empty?
   (comp not empty?))
+
+(defn contains [xs x]
+  (some (partial = x) xs))

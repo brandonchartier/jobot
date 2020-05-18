@@ -5,25 +5,22 @@
 (import ./request)
 (import ./write)
 
-(defn- contains [xs x]
-  (some (partial = x) xs))
-
 (defn- handler
   "Replies to messages based on type of rule."
   [stream from to rule body]
   (cond
-    (contains ["echo"] rule)
+    (h/contains ["echo"] rule)
     (write/priv stream to from body)
-    (contains ["ddate" "date"] rule)
+    (h/contains ["ddate" "date"] rule)
     (let [date (request/ddate)]
       (write/priv stream to from date))
-    (contains ["image" "img"] rule)
+    (h/contains ["image" "img"] rule)
     (let [url (request/google-image body)]
       (write/priv stream to from url))
-    (contains ["news"] rule)
-    (let [url (request/news body)]
-      (write/priv stream to from url))
-    (contains ["weather"] rule)
+    (h/contains ["news"] rule)
+    (let [news (request/news)]
+      (write/priv stream to from news))
+    (h/contains ["weather"] rule)
     (each city (c/config :cities)
       (let [temp (request/weather (city :name) (city :coords))]
         (write/priv stream to from temp)))))
