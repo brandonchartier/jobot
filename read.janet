@@ -5,7 +5,6 @@
 (import ./request)
 (import ./write)
 
-
 (defn- date? [cmd]
   (or (= cmd "date") (= cmd "ddate")))
 
@@ -18,31 +17,22 @@
 (defn- weather? [cmd]
   (= cmd "weather"))
 
-
-(defn- bare-handler
-  "Handles condition with no trailing content,
-   dispatches on the type of command and sends a reply."
-  [stream nick chan cmd]
+(defn- handler
+  "Replies to messages based on type of rule."
+  [stream from to rule body]
   (cond
-    (date? cmd)
+    (echo? rule)
+    (write/priv stream to from body)
+    (date? rule)
     (let [date (request/ddate)]
-      (write/priv stream chan nick date))
-    (weather? cmd)
+      (write/priv stream to from date))
+    (image? rule)
+    (let [url (request/google-image body)]
+      (write/priv stream to from url))
+    (weather? rule)
     (each city (c/config :cities)
       (let [temp (request/weather (city :name) (city :coords))]
-        (write/priv stream chan nick temp)))))
-
-(defn- body-handler
-  "Handles condition with trailing content,
-   dispatches on the type of command and sends a reply."
-  [stream nick chan cmd msg]
-  (cond
-    (echo? cmd)
-    (write/priv stream chan nick msg)
-    (image? cmd)
-    (let [url (request/google-image msg)]
-      (write/priv stream chan nick url))))
-
+        (write/priv stream to from temp)))))
 
 (defn- process
   "Pattern matches on the result of the IRC message grammar,
@@ -50,19 +40,18 @@
   [stream message]
   (h/log message)
   (match (peg/match grammar/message message)
-    [:ping pong]
-    (write/pong stream pong)
-    [:bare nick _ chan cmd]
-    (bare-handler stream nick chan cmd)
-    [:body nick _ chan cmd msg]
-    (body-handler stream nick chan cmd msg)))
-
+    [:command "PING" :trailing msg]
+    (write/pong stream msg)
+    [:from from :prefix _ :command "PRIVMSG" :to to :trailing msg]
+    (match (peg/match grammar/mention msg)
+      [:rule rule :body body]
+      (handler stream from to rule body))))
 
 (defn recur
   "Loop over the stream and parse the incoming messages,
    close the connection in case of a failure."
   [stream &opt acc]
-  (let [message (net/read stream 2048)]
+  (let [message (net/read stream 1024)]
     (if (nil? message)
       (net/close stream)
       (let [message-queue (queue/new)

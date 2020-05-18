@@ -1,6 +1,5 @@
 (import ./config :as c)
 
-
 (defn log
   "Prints error message if debugging is enabled,
    returns an optional value."

@@ -1,7 +1,6 @@
 (import ./config :as c)
 (import ./helper :as h)
 
-
 (defn- write
   "Writes a message to a stream, with a newline suffix,
    and sleeps for :delay seconds to avoid flooding."
@@ -10,7 +9,6 @@
     (h/log line)
     (net/write stream line)
     (os/sleep (in c/config :delay 0.5))))
-
 
 (defn priv
   "Sends a message to a channel,
@@ -26,9 +24,7 @@
   "Specifies the various names of the client.
    https://en.wikipedia.org/wiki/List_of_Internet_Relay_Chat_commands#USER"
   [stream username]
-  (write stream (string/format "USER %s %s %s %s"
-                               username
-                               username
+  (write stream (string/format "USER %s 0 * :%s"
                                username
                                username)))
 

@@ -4,7 +4,6 @@
 (import json)
 (import process)
 
-
 (defn- curl
   "Creates a curl process and returns the result,
    for pattern matching on :ok or :error.
@@ -28,7 +27,6 @@
     (h/not-empty? err)
     [:error err]))
 
-
 (defn google-image
   "Provided a search term,
    makes a request to Google APIS and returns a link."
@@ -46,7 +44,6 @@
       (in (h/sample items) "link")
       [:error err]
       (h/log err "not found"))))
-
 
 (defn weather
   "Provided the name of a city and its lat,long string,
@@ -69,7 +66,6 @@
         (in current "summary"))
       [:error err]
       (h/log err "not found"))))
-
 
 (defn ddate
   "Creates a ddate process and

@@ -1,42 +1,52 @@
 (import ./config :as c)
 
-
-(def- symbols
-  "Symbols used for parsing URLs and user-provided data."
-  '(set "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?"))
+(def crlf
+  '(* "\r" "\n"))
 
 (def message
-  "Grammar for parsing IRC messages."
   (peg/compile
-    ~{:symbols ,symbols
-      :whitespace (some :s)
-      :glyph (+ :w :symbols)
-      :glyphs (some :glyph)
-      :glyphs-or-spaces (some (+ :glyph " "))
-      :nickname (some (+ :w (set "_{}[]^")))
-      :mention (* ,(c/config :nick) (any ":"))
-      :ping (* (constant :ping)
-               "PING"
-               :whitespace
-               ":"
-               (<- :glyphs :pong))
-      :priv (* ":"
-               (<- :nickname)
+    ~{:crlf ,crlf
+      :tags (* (constant :tags)
+               "@"
+               (<- (some :S)))
+      :prefix (* (constant :prefix)
+                 (<- (some :S)))
+      :from (* (constant :from)
+               (<- (any (if-not "!" 1)))
                "!"
-               (<- :glyphs :hostname)
-               :whitespace
-               "PRIVMSG"
-               :whitespace
-               (<- :glyphs :channel)
-               :whitespace
-               ":"
-               :mention
-               :whitespace
-               (<- :glyphs :command))
-      :bare (* (constant :bare)
-               :priv)
-      :body (* (constant :body)
-               :priv
-               :whitespace
-               (<- :glyphs-or-spaces :message))
-      :main (+ :body :bare :ping)}))
+               :prefix)
+      :source (* ":"
+                 (+ :from :prefix))
+      :command (* (constant :command)
+                  (<- (some :w)))
+      :trailing (* (constant :trailing)
+                   ":"
+                   (<- (any (if-not :crlf 1))))
+      :to (* (constant :to)
+             (<- (any :S))
+             (any :s)
+             :trailing)
+      :params (+ :to :trailing)
+      :middle (* (constant :middle)
+                 (<- (some (+ :w " ")))
+                 (constant :placeholder)
+                 (<- (any (if-not :crlf 1))))
+      :main (* (any (* :tags (some " ")))
+               (any (* :source (some " ")))
+               :command
+               (any " ")
+               (any (+ :params :middle))
+               :crlf)}))
+
+(def mention
+  (peg/compile
+    ~{:crlf ,crlf
+      :rule (* (constant :rule)
+               (<- (some :w)))
+      :body (* :rule
+               (any :s)
+               (constant :body)
+               (<- (any (if-not :crlf 1))))
+      :main (* ,(c/config :nick)
+               (any (set ": "))
+               :body)}))

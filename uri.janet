@@ -1,6 +1,5 @@
 (import uri)
 
-
 (defn- unparse-scheme [scheme]
   (if (nil? scheme) "" (string scheme "://")))
 
@@ -27,7 +26,6 @@
 
 (defn- unparse-hash [hash]
   (if (nil? hash) "" (string "#" hash)))
-
 
 (defn unparse
   "Creates a URI from keyword arguments."

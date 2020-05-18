@@ -2,7 +2,6 @@
 (import ./read)
 (import ./write)
 
-
 (defn main
   "Connects to a host and port, creating a duplex stream
    and begins the IRC connection process;

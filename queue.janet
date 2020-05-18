@@ -1,7 +1,4 @@
-(import queue)
-
-
-(def new queue/new)
+(import queue :prefix "" :export true)
 
 (defn- split-after
   "Splits a string into a head/tail pair,
@@ -23,13 +20,13 @@
     (if (nil? idx)
       val
       (let [[head tail] (split-after val idx pat)]
-        (queue/enqueue queue head)
+        (enqueue queue head)
         (split-and-add queue tail)))))
 
 (defn read-until-end
   "Recursively reads a queue until empty,
    processing each item with a transform function."
   [queue f]
-  (when-let [item (queue/dequeue queue)]
+  (when-let [item (dequeue queue)]
     (f item)
     (read-until-end queue f)))
