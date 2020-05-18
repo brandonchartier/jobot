@@ -44,7 +44,7 @@
       :rule (* (constant :rule)
                (<- (some :w)))
       :body (* :rule
-               (any :s)
+               (any " ")
                (constant :body)
                (<- (any (if-not :crlf 1))))
       :main (* ,(c/config :nick)

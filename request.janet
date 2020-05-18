@@ -4,6 +4,23 @@
 (import json)
 (import process)
 
+(defn ddate
+  "Creates a ddate process and
+   returns the Discordian date."
+  []
+  (def out @"")
+  (def err @"")
+
+  (process/run
+    ["ddate"]
+    :redirects [[stdout out] [stderr err]])
+
+  (cond
+    (h/not-empty? out)
+    (string/trim out)
+    (h/not-empty? err)
+    (h/log err "today")))
+
 (defn- curl
   "Creates a curl process and returns the result,
    for pattern matching on :ok or :error.
@@ -67,19 +84,20 @@
       [:error err]
       (h/log err "not found"))))
 
-(defn ddate
-  "Creates a ddate process and
-   returns the Discordian date."
-  []
-  (def out @"")
-  (def err @"")
-
-  (process/run
-    ["ddate"]
-    :redirects [[stdout out] [stderr err]])
-
-  (cond
-    (h/not-empty? out)
-    (string/trim out)
-    (h/not-empty? err)
-    (h/log err "today")))
+(defn news
+  [query]
+  (let [url (uri/unparse
+              :scheme "https"
+              :host "newsapi.org"
+              :path "/v2/top-headlines"
+              :query {:apiKey (c/config :news-key)
+                      :country "us"
+                      :q query})]
+    (pp url)
+    (match (curl "GET" url)
+      [:ok {"articles" articles}]
+      (if (h/not-empty? articles)
+        (in (h/sample articles) "title")
+        "not found")
+      [:error err]
+      (h/log err "not found"))))

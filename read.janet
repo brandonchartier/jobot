@@ -5,31 +5,25 @@
 (import ./request)
 (import ./write)
 
-(defn- date? [cmd]
-  (or (= cmd "date") (= cmd "ddate")))
-
-(defn- echo? [cmd]
-  (= cmd "echo"))
-
-(defn- image? [cmd]
-  (or (= cmd "img") (= cmd "image")))
-
-(defn- weather? [cmd]
-  (= cmd "weather"))
+(defn- contains [xs x]
+  (some (partial = x) xs))
 
 (defn- handler
   "Replies to messages based on type of rule."
   [stream from to rule body]
   (cond
-    (echo? rule)
+    (contains ["echo"] rule)
     (write/priv stream to from body)
-    (date? rule)
+    (contains ["ddate" "date"] rule)
     (let [date (request/ddate)]
       (write/priv stream to from date))
-    (image? rule)
+    (contains ["image" "img"] rule)
     (let [url (request/google-image body)]
       (write/priv stream to from url))
-    (weather? rule)
+    (contains ["news"] rule)
+    (let [url (request/news body)]
+      (write/priv stream to from url))
+    (contains ["weather"] rule)
     (each city (c/config :cities)
       (let [temp (request/weather (city :name) (city :coords))]
         (write/priv stream to from temp)))))
@@ -40,10 +34,10 @@
   [stream message]
   (h/log message)
   (match (peg/match grammar/message message)
-    [:command "PING" :trailing msg]
-    (write/pong stream msg)
-    [:from from :prefix _ :command "PRIVMSG" :to to :trailing msg]
-    (match (peg/match grammar/mention msg)
+    [:command "PING" :trailing trailing]
+    (write/pong stream trailing)
+    [:from from :prefix _ :command "PRIVMSG" :to to :trailing trailing]
+    (match (peg/match grammar/mention trailing)
       [:rule rule :body body]
       (handler stream from to rule body))))
 
