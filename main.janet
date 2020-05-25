@@ -36,11 +36,13 @@
       [:rule rule :body body]
       (priv-handler stream from to rule body))))
 
-(irc/connect
-  {:host (c/config :host)
-   :port (c/config :port)
-   :channels (c/config :channels)
-   :nickname (c/config :nickname)
-   :username (c/config :nickname)
-   :realname (c/config :nickname)}
-  read)
+(defn main
+  [&]
+  (irc/connect
+    {:host (c/config :host)
+     :port (c/config :port)
+     :channels (c/config :channels)
+     :nickname (c/config :nickname)
+     :username (c/config :nickname)
+     :realname (c/config :nickname)}
+    read))
