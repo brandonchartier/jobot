@@ -18,5 +18,5 @@
 (def not-empty?
   (comp not empty?))
 
-(defn contains [xs x]
+(defn member [xs x]
   (some (partial = x) xs))

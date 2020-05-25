@@ -4,10 +4,10 @@
 (import json)
 (import process)
 
-(def no-result "No result.")
-(def not-found "Not found.")
+(def- no-result "No result.")
+(def- not-found "Not found.")
 
-(def sources
+(def- sources
   (string/join (c/config :news-sources) ","))
 
 (defn ddate
@@ -26,7 +26,6 @@
     (string/trim out)
     (h/not-empty? err)
     (h/log err not-found)))
-
 
 (defn- curl
   "Creates a curl process and returns the result,
@@ -93,7 +92,6 @@
       [:error err]
       (h/log err not-found))))
 
-
 (defn news
   "Creates a request to News API
    and returns a random headline."
@@ -104,7 +102,6 @@
               :path "/v2/top-headlines"
               :query {:apiKey (c/config :news-key)
                       :sources sources})]
-    (pp url)
     (match (curl "GET" url)
       [:ok {"articles" articles}]
       (if (h/not-empty? articles)

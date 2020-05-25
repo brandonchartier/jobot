@@ -1,19 +1,46 @@
 (import ./config :as c)
-(import ./read)
-(import ./write)
+(import ./grammar)
+(import ./helper :as h)
+(import ./request)
+(import irc-client :as irc)
 
-(defn main
-  "Connects to a host and port, creating a duplex stream
-   and begins the IRC connection process;
-   passes the stream to a loop for further read processing."
-  [&]
-  (let [channels (c/config :channels)
-        nick (c/config :nick)
-        port (c/config :port)
-        server (c/config :server)
-        stream (net/connect server port)]
-    (write/user stream nick)
-    (write/nick stream nick)
-    (each channel channels
-      (write/join stream channel))
-    (read/recur stream)))
+(defn- priv-handler
+  "Replies to messages based on type of rule."
+  [stream from to rule body]
+  (cond
+    (h/member ["echo"] rule)
+    (irc/write-priv stream to from body)
+    (h/member ["ddate" "date"] rule)
+    (let [date (request/ddate)]
+      (irc/write-priv stream to from date))
+    (h/member ["image" "img"] rule)
+    (let [url (request/google-image body)]
+      (irc/write-priv stream to from url))
+    (h/member ["news"] rule)
+    (let [news (request/news)]
+      (irc/write-priv stream to from news))
+    (h/member ["weather"] rule)
+    (each city (c/config :cities)
+      (let [temp (request/weather (city :name) (city :coords))]
+        (irc/write-priv stream to from temp)))))
+
+(defn- read
+  "Pattern matches on the result of the IRC message grammar,
+   replies based on the command provided to the stream."
+  [stream message]
+  (match message
+    [:ping pong]
+    (irc/write-pong stream pong)
+    [:priv _ from to trailing]
+    (match (peg/match grammar/mention trailing)
+      [:rule rule :body body]
+      (priv-handler stream from to rule body))))
+
+(irc/connect
+  {:host (c/config :host)
+   :port (c/config :port)
+   :channels (c/config :channels)
+   :nickname (c/config :nickname)
+   :username (c/config :nickname)
+   :realname (c/config :nickname)}
+  read)
