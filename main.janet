@@ -1,25 +1,27 @@
 (import ./config :as c)
 (import ./grammar)
-(import ./helper :as h)
 (import ./request)
 (import irc-client :as irc)
+
+(defn member [xs x]
+  (some (partial = x) xs))
 
 (defn- priv-handler
   "Replies to messages based on type of rule."
   [stream from to rule body]
   (cond
-    (h/member ["echo"] rule)
+    (member ["echo"] rule)
     (irc/write-priv stream to from body)
-    (h/member ["ddate" "date"] rule)
+    (member ["ddate" "date"] rule)
     (let [date (request/ddate)]
       (irc/write-priv stream to from date))
-    (h/member ["image" "img"] rule)
+    (member ["image" "img"] rule)
     (let [url (request/google-image body)]
       (irc/write-priv stream to from url))
-    (h/member ["news"] rule)
+    (member ["news"] rule)
     (let [news (request/news)]
       (irc/write-priv stream to from news))
-    (h/member ["weather"] rule)
+    (member ["weather"] rule)
     (each city (c/config :cities)
       (let [temp (request/weather (city :name) (city :coords))]
         (irc/write-priv stream to from temp)))))

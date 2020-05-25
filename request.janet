@@ -1,8 +1,25 @@
 (import ./config :as c)
-(import ./helper :as h)
 (import ./uri)
 (import json)
 (import process)
+
+(defn log
+  "Prints error message if debugging is enabled,
+   returns an optional value."
+  [message &opt value]
+  (when (c/config :debug) (pp message))
+  value)
+
+(defn sample
+  "Returns a random item from an indexed data structure."
+  [ind]
+  (let [rdm (os/cryptorand 10)
+        len (length ind)
+        idx (math/rng-int (math/rng rdm) len)]
+    (in ind idx)))
+
+(def not-empty?
+  (comp not empty?))
 
 (def- no-result "No result.")
 (def- not-found "Not found.")
@@ -22,10 +39,10 @@
     :redirects [[stdout out] [stderr err]])
 
   (cond
-    (h/not-empty? out)
+    (not-empty? out)
     (string/trim out)
-    (h/not-empty? err)
-    (h/log err not-found)))
+    (not-empty? err)
+    (log err not-found)))
 
 (defn- curl
   "Creates a curl process and returns the result,
@@ -45,9 +62,9 @@
     :redirects [[stdout out] [stderr err]])
 
   (cond
-    (h/not-empty? out)
+    (not-empty? out)
     [:ok (json/decode out)]
-    (h/not-empty? err)
+    (not-empty? err)
     [:error err]))
 
 (defn google-image
@@ -64,11 +81,11 @@
                       :searchType "image"})]
     (match (curl "GET" url)
       [:ok {"items" items}]
-      (if (h/not-empty? items)
-        (in (h/sample items) "link")
-        (h/log no-result not-found))
+      (if (not-empty? items)
+        (in (sample items) "link")
+        (log no-result not-found))
       [:error err]
-      (h/log err not-found))))
+      (log err not-found))))
 
 (defn weather
   "Provided the name of a city and its lat,long string,
@@ -90,7 +107,7 @@
         (math/round (in current "temperature"))
         (in current "summary"))
       [:error err]
-      (h/log err not-found))))
+      (log err not-found))))
 
 (defn news
   "Creates a request to News API
@@ -104,8 +121,8 @@
                       :sources sources})]
     (match (curl "GET" url)
       [:ok {"articles" articles}]
-      (if (h/not-empty? articles)
-        (in (h/sample articles) "title")
-        (h/log no-result not-found))
+      (if (not-empty? articles)
+        (in (sample articles) "title")
+        (log no-result not-found))
       [:error err]
-      (h/log err not-found))))
+      (log err not-found))))
