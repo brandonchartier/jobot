@@ -24,7 +24,7 @@
     (member ["weather"] rule)
     (each city (c/config :cities)
       (let [temp (request/weather (city :name) (city :coords))]
-        (irc/write-priv stream to from temp)))))
+        (irc/write-msg stream to temp)))))
 
 (defn- read
   "Pattern matches on the result of the IRC message grammar,
