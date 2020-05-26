@@ -1,16 +1,16 @@
 (import ./config :as c)
-(import ./uri)
 (import json)
 (import process)
+(import url)
 
-(defn log
+(defn- log
   "Prints error message if debugging is enabled,
    returns an optional value."
   [message &opt value]
   (when (c/config :debug) (pp message))
   value)
 
-(defn sample
+(defn- sample
   "Returns a random item from an indexed data structure."
   [ind]
   (let [rdm (os/cryptorand 10)
@@ -18,14 +18,11 @@
         idx (math/rng-int (math/rng rdm) len)]
     (in ind idx)))
 
-(def not-empty?
+(def- not-empty?
   (comp not empty?))
 
 (def- no-result "No result.")
 (def- not-found "Not found.")
-
-(def- sources
-  (string/join (c/config :news-sources) ","))
 
 (defn ddate
   "Creates a ddate process and
@@ -71,7 +68,7 @@
   "Provided a search term,
    makes a request to Google APIS and returns a link."
   [search-term]
-  (let [url (uri/unparse
+  (let [url (url/format
               :scheme "https"
               :host "www.googleapis.com"
               :path "/customsearch/v1"
@@ -92,7 +89,7 @@
    makes a request to the Dark Sky API,
    returning a description of the weather."
   [name lat-long]
-  (let [url (uri/unparse
+  (let [url (url/format
               :scheme "https"
               :host "api.darksky.net"
               :path (string/format
@@ -109,11 +106,14 @@
       [:error err]
       (log err not-found))))
 
+(def- sources
+  (string/join (c/config :news-sources) ","))
+
 (defn news
   "Creates a request to News API
    and returns a random headline."
   []
-  (let [url (uri/unparse
+  (let [url (url/format
               :scheme "https"
               :host "newsapi.org"
               :path "/v2/top-headlines"

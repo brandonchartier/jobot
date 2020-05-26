@@ -1,6 +1,5 @@
 (def config
   {:debug true
-   :delay 0.5
    :host "irc.example.org"
    :port "6667"
    :channels ["#example"]
