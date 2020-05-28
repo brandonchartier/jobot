@@ -1,14 +1,11 @@
 (import ./config :as c)
+(import ./db)
 (import json)
 (import process)
 (import url)
 
-(defn- log
-  "Prints error message if debugging is enabled,
-   returns an optional value."
-  [message &opt value]
-  (when (c/config :debug) (pp message))
-  value)
+(def- not-empty?
+  (comp not empty?))
 
 (defn- sample
   "Returns a random item from an indexed data structure."
@@ -18,28 +15,28 @@
         idx (math/rng-int (math/rng rdm) len)]
     (in ind idx)))
 
-(def- not-empty?
-  (comp not empty?))
-
-(def- no-result "No result.")
-(def- not-found "Not found.")
+(defn- run
+  [& cmds]
+  (def out @"")
+  (def err @"")
+  (process/run
+    cmds
+    :redirects [[stdout out] [stderr err]])
+  (cond
+    (not-empty? out)
+    [:ok out]
+    (not-empty? err)
+    [:error err]))
 
 (defn ddate
   "Creates a ddate process and
    returns the Discordian date."
   []
-  (def out @"")
-  (def err @"")
-
-  (process/run
-    ["ddate"]
-    :redirects [[stdout out] [stderr err]])
-
-  (cond
-    (not-empty? out)
-    (string/trim out)
-    (not-empty? err)
-    (log err not-found)))
+  (match (run "ddate")
+    [:ok data]
+    (string/trim data)
+    [:error err]
+    "not found"))
 
 (defn- curl
   "Creates a curl process and returns the result,
@@ -50,79 +47,82 @@
    1. --silent: removes the progress bar normally sent to stdout.
    2. --fail and --show-error:
       use in combination to send HTTP errors to stderr."
-  [method url]
-  (def out @"")
-  (def err @"")
+  [url]
+  (match (run "curl" "-sfS" url)
+    [:ok data]
+    [:ok (json/decode data)]
+    err err))
 
-  (process/run
-    ["curl" "--silent" "--fail" "--show-error" "-X" method url]
-    :redirects [[stdout out] [stderr err]])
-
-  (cond
-    (not-empty? out)
-    [:ok (json/decode out)]
-    (not-empty? err)
-    [:error err]))
+(defn- image-url
+  [query]
+  (url/format
+    :scheme "https"
+    :host "www.googleapis.com"
+    :path "/customsearch/v1"
+    :query {:key (c/config :google-key)
+            :cx (c/config :google-cx)
+            :q query
+            :searchType "image"}))
 
 (defn google-image
   "Provided a search term,
    makes a request to Google APIS and returns a link."
-  [search-term]
-  (let [url (url/format
-              :scheme "https"
-              :host "www.googleapis.com"
-              :path "/customsearch/v1"
-              :query {:key (c/config :google-key)
-                      :cx (c/config :google-cx)
-                      :q search-term
-                      :searchType "image"})]
-    (match (curl "GET" url)
-      [:ok {"items" items}]
-      (if (not-empty? items)
-        (in (sample items) "link")
-        (log no-result not-found))
-      [:error err]
-      (log err not-found))))
+  [query]
+  (match (curl (image-url query))
+    [:ok {"items" data}]
+    (in (sample data) "link")
+    [:error err]
+    "not found"))
+
+(defn- weather-url
+  [lat-long]
+  (url/format
+    :scheme "https"
+    :host "api.darksky.net"
+    :path (string/format
+            "/forecast/%s/%s"
+            (c/config :darksky-key)
+            lat-long)))
 
 (defn weather
   "Provided the name of a city and its lat,long string,
    makes a request to the Dark Sky API,
    returning a description of the weather."
   [name lat-long]
-  (let [url (url/format
-              :scheme "https"
-              :host "api.darksky.net"
-              :path (string/format
-                      "/forecast/%s/%s"
-                      (c/config :darksky-key)
-                      lat-long))]
-    (match (curl "GET" url)
-      [:ok {"currently" current}]
-      (string/format
-        "%s: %d° %s"
-        name
-        (math/round (in current "temperature"))
-        (in current "summary"))
-      [:error err]
-      (log err not-found))))
+  (match (curl (weather-url lat-long))
+    [:ok {"currently" data}]
+    (string/format
+      "%s: %d° %s"
+      name
+      (math/round (in data "temperature"))
+      (in data "summary"))
+    [:error err]
+    "not found"))
 
 (def- sources
   (string/join (c/config :news-sources) ","))
+
+(def- news-url
+  (url/format
+    :scheme "https"
+    :host "newsapi.org"
+    :path "/v2/top-headlines"
+    :query {:apiKey (c/config :news-key)
+            :sources sources}))
 
 (defn news
   "Creates a request to News API
    and returns a random headline."
   []
-  (let [url (url/format
-              :scheme "https"
-              :host "newsapi.org"
-              :path "/v2/top-headlines"
-              :query {:apiKey (c/config :news-key)
-                      :sources sources})]
-    (match (curl "GET" url)
-      [:ok {"articles" articles}]
-      (if (not-empty? articles)
-        (in (sample articles) "title")
-        (log no-result not-found))
-      [:error err]
-      (log err not-found))))
+  (match (curl news-url)
+    [:ok {"articles" data}]
+    (in (sample data) "title")
+    [:error err]
+    "not found"))
+
+(defn random-log
+  []
+  (match (db/random-log)
+    [log]
+    (string "<" (log :sent_by) "> " (log :message))
+    _ "not found"))

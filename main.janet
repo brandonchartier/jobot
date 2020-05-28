@@ -1,4 +1,5 @@
 (import ./config :as c)
+(import ./db)
 (import ./request)
 (import irc-client :as irc)
 
@@ -11,18 +12,21 @@
   (cond
     (member ["echo"] cmd)
     (irc/write-priv stream to from msg)
+    (member ["random"] cmd)
+    (when-let [log (request/random-log)]
+      (irc/write-msg stream to log))
     (member ["ddate" "date"] cmd)
-    (let [date (request/ddate)]
+    (when-let [date (request/ddate)]
       (irc/write-priv stream to from date))
     (member ["image" "img"] cmd)
-    (let [url (request/google-image msg)]
+    (when-let [url (request/google-image msg)]
       (irc/write-priv stream to from url))
     (member ["news"] cmd)
-    (let [news (request/news)]
+    (when-let [news (request/news)]
       (irc/write-priv stream to from news))
     (member ["weather"] cmd)
     (each city (c/config :cities)
-      (let [temp (request/weather (city :name) (city :coords))]
+      (when-let [temp (request/weather (city :name) (city :coords))]
         (irc/write-msg stream to temp)))))
 
 (def- mention
@@ -48,12 +52,15 @@
     [:ping pong]
     (irc/write-pong stream pong)
     [:priv _ from to trailing]
-    (match (peg/match mention trailing)
-      [:cmd cmd :msg msg]
-      (reply stream from to cmd msg))))
+    (do
+      (db/log-message from to trailing)
+      (match (peg/match mention trailing)
+        [:cmd cmd :msg msg]
+        (reply stream from to cmd msg)))))
 
 (defn main
   [&]
+  (db/create-table)
   (irc/connect
     {:host (c/config :host)
      :port (c/config :port)
