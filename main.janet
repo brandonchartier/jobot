@@ -55,11 +55,10 @@
     [:ping pong]
     (irc/write-pong stream pong)
     [:priv _ from to trailing]
-    (do
-      (db/insert-log from to trailing)
-      (match (peg/match mention trailing)
-        [:cmd cmd :msg msg]
-        (reply stream from to cmd msg)))))
+    (match (peg/match mention trailing)
+      [:cmd cmd :msg msg]
+      (reply stream from to cmd msg)
+      _ (db/insert-log from to trailing))))
 
 (defn main
   [&]
