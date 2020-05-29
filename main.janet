@@ -13,8 +13,11 @@
     (member ["echo"] cmd)
     (irc/write-priv stream to from msg)
     (member ["random"] cmd)
-    (when-let [log (request/random-log)]
+    (when-let [log (request/select-random)]
       (irc/write-msg stream to log))
+    (member ["search"] cmd)
+    (when-let [result (request/select-search msg)]
+      (irc/write-msg stream to result))
     (member ["ddate" "date"] cmd)
     (when-let [date (request/ddate)]
       (irc/write-priv stream to from date))
@@ -53,7 +56,7 @@
     (irc/write-pong stream pong)
     [:priv _ from to trailing]
     (do
-      (db/log-message from to trailing)
+      (db/insert-log from to trailing)
       (match (peg/match mention trailing)
         [:cmd cmd :msg msg]
         (reply stream from to cmd msg)))))

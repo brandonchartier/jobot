@@ -35,8 +35,7 @@
   (match (run "ddate")
     [:ok data]
     (string/trim data)
-    [:error err]
-    "not found"))
+    _ "not found"))
 
 (defn- curl
   "Creates a curl process and returns the result,
@@ -50,7 +49,7 @@
   [url]
   (match (run "curl" "-sfS" url)
     [:ok data]
-    [:ok (json/decode data)]
+    (json/decode data)
     err err))
 
 (defn- image-url
@@ -69,10 +68,9 @@
    makes a request to Google APIS and returns a link."
   [query]
   (match (curl (image-url query))
-    [:ok {"items" data}]
+    {"items" data}
     (in (sample data) "link")
-    [:error err]
-    "not found"))
+    _ "not found"))
 
 (defn- weather-url
   [lat-long]
@@ -90,14 +88,13 @@
    returning a description of the weather."
   [name lat-long]
   (match (curl (weather-url lat-long))
-    [:ok {"currently" data}]
+    {"currently" data}
     (string/format
       "%s: %d° %s"
       name
       (math/round (in data "temperature"))
       (in data "summary"))
-    [:error err]
-    "not found"))
+    _ "not found"))
 
 (def- sources
   (string/join (c/config :news-sources) ","))
@@ -115,14 +112,21 @@
    and returns a random headline."
   []
   (match (curl news-url)
-    [:ok {"articles" data}]
+    {"articles" data}
     (in (sample data) "title")
-    [:error err]
-    "not found"))
-
-(defn random-log
-  []
-  (match (db/random-log)
-    [log]
-    (string "<" (log :sent_by) "> " (log :message))
     _ "not found"))
+
+(defn select-random
+  []
+  (match (db/select-random)
+    {:sent_by by :message msg}
+    (string "<" by "> " msg)
+    _ "not found"))
+
+(defn select-search
+  [query]
+  (let [q (string "%" query "%")]
+    (match (db/select-search q)
+      {:sent_by by :message msg}
+      (string "<" by "> " msg)
+      _ "not found")))

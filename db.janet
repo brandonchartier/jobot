@@ -1,40 +1,46 @@
 (import sqlite3 :as sql)
 
-(defn- open-db
-  []
-  (sql/open "jobot.db"))
+(defn- exec
+  [statement &opt ds]
+  (default ds {})
+  (let [db (sql/open "jobot.db")
+        xs (sql/eval db statement ds)]
+    (sql/close db)
+    xs))
 
 (defn- open-sql-file
   [filename]
   (string (slurp filename)))
 
-(def- sql-create-logs
+(def- sql-create-table
   (open-sql-file "./sql/create-table.sql"))
 
-(def- sql-log-message
-  (open-sql-file "./sql/log-message.sql"))
+(def- sql-insert-log
+  (open-sql-file "./sql/insert-log.sql"))
 
-(def- sql-random-log
-  (open-sql-file "./sql/random-log.sql"))
+(def- sql-select-random
+  (open-sql-file "./sql/select-random.sql"))
+
+(def- sql-select-search
+  (open-sql-file "./sql/select-search.sql"))
 
 (defn create-table
   []
-  (let [db (open-db)]
-    (sql/eval db sql-create-logs)
-    (sql/close db)))
+  (exec sql-create-table))
 
-(defn log-message
+(defn insert-log
   [by to message]
-  (let [db (open-db)
-        msg {:to to
-             :by by
-             :message message}]
-    (sql/eval db sql-log-message msg)
-    (sql/close db)))
+  (exec sql-insert-log
+        {:to to
+         :by by
+         :message message}))
 
-(defn random-log
+(defn select-random
   []
-  (let [db (open-db)
-        random (sql/eval db sql-random-log)]
-    (sql/close db)
-    random))
+  (let [random (exec sql-select-random)]
+    (get random 0)))
+
+(defn select-search
+  [query]
+  (let [search (exec sql-select-search {:query query})]
+    (get search 0)))
