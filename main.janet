@@ -13,11 +13,8 @@
     (member ["echo"] cmd)
     (irc/write-priv stream to from msg)
     (member ["random"] cmd)
-    (when-let [log (request/select-random)]
+    (when-let [log (request/select-random msg)]
       (irc/write-msg stream to log))
-    (member ["search"] cmd)
-    (when-let [result (request/select-search msg)]
-      (irc/write-msg stream to result))
     (member ["ddate" "date"] cmd)
     (when-let [date (request/ddate)]
       (irc/write-priv stream to from date))

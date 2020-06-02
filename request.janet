@@ -96,7 +96,7 @@
       (in data "summary"))
     _ "not found"))
 
-(def- sources
+(def- news-sources
   (string/join (c/config :news-sources) ","))
 
 (def- news-url
@@ -105,7 +105,7 @@
     :host "newsapi.org"
     :path "/v2/top-headlines"
     :query {:apiKey (c/config :news-key)
-            :sources sources}))
+            :sources news-sources}))
 
 (defn news
   "Creates a request to News API
@@ -117,16 +117,10 @@
     _ "not found"))
 
 (defn select-random
-  []
-  (match (db/select-random)
-    {:sent_by by :message msg}
-    (string "<" by "> " msg)
-    _ "not found"))
-
-(defn select-search
+  "Queries DB logs using LIKE."
   [query]
   (let [q (string "%" query "%")]
-    (match (db/select-search q)
+    (match (db/select-random q)
       {:sent_by by :message msg}
       (string "<" by "> " msg)
       _ "not found")))

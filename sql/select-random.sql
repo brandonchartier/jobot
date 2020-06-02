@@ -1,3 +1,5 @@
 SELECT * FROM log
+WHERE message
+LIKE :query
 ORDER BY RANDOM()
 LIMIT 1;
