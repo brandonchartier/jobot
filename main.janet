@@ -15,9 +15,6 @@
     (member ["random"] cmd)
     (when-let [log (request/select-random msg)]
       (irc/write-msg stream to log))
-    (member ["ddate" "date"] cmd)
-    (when-let [date (request/ddate)]
-      (irc/write-priv stream to from date))
     (member ["image" "img"] cmd)
     (when-let [url (request/google-image msg)]
       (irc/write-priv stream to from url))

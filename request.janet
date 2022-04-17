@@ -1,7 +1,7 @@
 (import ./config :as c)
 (import ./db)
+(import http)
 (import json)
-(import process)
 (import url)
 
 (def- not-empty?
@@ -15,42 +15,13 @@
         idx (math/rng-int (math/rng rdm) len)]
     (in ind idx)))
 
-(defn- run
-  [& cmds]
-  (def out @"")
-  (def err @"")
-  (process/run
-    cmds
-    :redirects [[stdout out] [stderr err]])
-  (cond
-    (not-empty? out)
-    [:ok out]
-    (not-empty? err)
-    [:error err]))
-
-(defn ddate
-  "Creates a ddate process and
-   returns the Discordian date."
-  []
-  (match (run "ddate")
-    [:ok data]
-    (string/trim data)
-    _ "not found"))
-
-(defn- curl
-  "Creates a curl process and returns the result,
-   for pattern matching on :ok or :error.
-   Decode :ok responses as JSON.
-
-   Provide these options to curl:
-   1. --silent: removes the progress bar normally sent to stdout.
-   2. --fail and --show-error:
-      use in combination to send HTTP errors to stderr."
+(defn- request
+  "Helper function for making HTTP requests."
   [url]
-  (match (run "curl" "-sfS" url)
-    [:ok data]
-    (json/decode data)
-    err err))
+  (let [response (http/get url)]
+    (match (response :status)
+      200 (json/decode (response :body))
+      _ "not found")))
 
 (defn- image-url
   [query]
@@ -67,7 +38,7 @@
   "Provided a search term,
    makes a request to Google APIS and returns a link."
   [query]
-  (match (curl (image-url query))
+  (match (request (image-url query))
     {"items" data}
     (in (sample data) "link")
     _ "not found"))
@@ -87,7 +58,7 @@
    makes a request to the Dark Sky API,
    returning a description of the weather."
   [name lat-long]
-  (match (curl (weather-url lat-long))
+  (match (request (weather-url lat-long))
     {"currently" data}
     (string/format
       "%s: %d° %s"
@@ -111,7 +82,7 @@
   "Creates a request to News API
    and returns a random headline."
   []
-  (match (curl news-url)
+  (match (request news-url)
     {"articles" data}
     (in (sample data) "title")
     _ "not found"))
