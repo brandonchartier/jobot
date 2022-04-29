@@ -1,5 +1,5 @@
 SELECT * FROM log
-WHERE message
-LIKE :query
+WHERE sent_to = :sent
+AND message LIKE :query
 ORDER BY RANDOM()
 LIMIT 1;

@@ -89,9 +89,9 @@
 
 (defn select-random
   "Queries DB logs using LIKE."
-  [query]
+  [query to]
   (let [q (string "%" query "%")]
-    (match (db/select-random q)
+    (match (db/select-random q to)
       {:sent_by by :message msg}
       (string "<" by "> " msg)
       _ "not found")))

@@ -1,5 +1,18 @@
 (import sqlite3 :as sql)
 
+(defn- read-file
+  [filename]
+  (string (slurp filename)))
+
+(def- sql-create-table
+  (read-file "./sql/create-table.sql"))
+
+(def- sql-insert-log
+  (read-file "./sql/insert-log.sql"))
+
+(def- sql-select-random
+  (read-file "./sql/select-random.sql"))
+
 (defn- exec
   [statement &opt ds]
   (default ds {})
@@ -7,19 +20,6 @@
         xs (sql/eval db statement ds)]
     (sql/close db)
     xs))
-
-(defn- open-sql-file
-  [filename]
-  (string (slurp filename)))
-
-(def- sql-create-table
-  (open-sql-file "./sql/create-table.sql"))
-
-(def- sql-insert-log
-  (open-sql-file "./sql/insert-log.sql"))
-
-(def- sql-select-random
-  (open-sql-file "./sql/select-random.sql"))
 
 (defn create-table
   []
@@ -33,6 +33,6 @@
          :message message}))
 
 (defn select-random
-  [query]
-  (let [random (exec sql-select-random {:query query})]
+  [query sent]
+  (let [random (exec sql-select-random {:query query :sent sent})]
     (get random 0)))
