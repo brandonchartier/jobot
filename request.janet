@@ -1,11 +1,7 @@
-(import ./config :as c)
 (import ./db)
 (import http)
 (import spork/json)
 (import url)
-
-(def- not-empty?
-  (comp not empty?))
 
 (defn- sample
   "Returns a random item from an indexed data structure."
@@ -24,21 +20,21 @@
       _ "not found")))
 
 (defn- image-url
-  [query]
+  [google-key google-cx query]
   (url/format
     :scheme "https"
     :host "www.googleapis.com"
     :path "/customsearch/v1"
-    :query {:key (c/config :google-key)
-            :cx (c/config :google-cx)
+    :query {:key google-key
+            :cx google-cx
             :q query
             :searchType "image"}))
 
 (defn google-image
   "Provided a search term,
    makes a request to Google APIS and returns a link."
-  [query]
-  (match (request (image-url query))
+  [google-key google-cx query]
+  (match (request (image-url google-key google-cx query))
     {"items" data}
     (in (sample data) "link")
     _ "not found"))
@@ -82,31 +78,29 @@
       (get weather-codes (in data "weathercode") "Unknown"))
     _ "not found"))
 
-(def- news-sources
-  (string/join (c/config :news-sources) ","))
-
-(def- news-url
+(defn- news-url
+  [news-key news-sources]
   (url/format
     :scheme "https"
     :host "newsapi.org"
     :path "/v2/top-headlines"
-    :query {:apiKey (c/config :news-key)
-            :sources news-sources}))
+    :query {:apiKey news-key
+            :sources (string/join news-sources ",")}))
 
 (defn news
   "Creates a request to News API
    and returns a random headline."
-  []
-  (match (request news-url)
+  [news-key news-sources]
+  (match (request (news-url news-key news-sources))
     {"articles" data}
     (in (sample data) "title")
     _ "not found"))
 
 (defn select-random
   "Queries DB logs using LIKE."
-  [query to]
+  [db-path query to]
   (let [q (string "%" query "%")]
-    (match (db/select-random q to)
+    (match (db/select-random db-path q to)
       {:sent_by by :message msg}
       (string "<" by "> " msg)
       _ "not found")))

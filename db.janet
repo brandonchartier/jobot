@@ -1,5 +1,4 @@
 (import sqlite3 :as sql)
-(import ./config :as c)
 
 (defn- read-file
   [filename]
@@ -15,25 +14,25 @@
   (read-file "./sql/select-random.sql"))
 
 (defn- exec
-  [statement &opt ds]
+  [db-path statement &opt ds]
   (default ds {})
-  (let [db (sql/open (c/config :db-path))
+  (let [db (sql/open db-path)
         xs (sql/eval db statement ds)]
     (sql/close db)
     xs))
 
 (defn create-table
-  []
-  (exec sql-create-table))
+  [db-path]
+  (exec db-path sql-create-table))
 
 (defn insert-log
-  [by to message]
-  (exec sql-insert-log
+  [db-path by to message]
+  (exec db-path sql-insert-log
         {:to to
          :by by
          :message message}))
 
 (defn select-random
-  [query sent]
-  (let [random (exec sql-select-random {:query query :sent sent})]
+  [db-path query sent]
+  (let [random (exec db-path sql-select-random {:query query :sent sent})]
     (get random 0)))
