@@ -5,7 +5,7 @@ An IRC bot written in Janet.
 ## Setup
 
 ```sh
-cp config.example.jdn config.jdn
+make config  # creates config.jdn from example
 # Edit config.jdn with your IRC server, nickname, and API keys
 make run
 ```
