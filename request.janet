@@ -1,7 +1,7 @@
 (import ./config :as c)
 (import ./db)
 (import http)
-(import json)
+(import spork/json)
 (import url)
 
 (def- not-empty?

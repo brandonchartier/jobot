@@ -4,7 +4,7 @@
   :author "Brandon Chartier"
   :url "https://github.com/brandonchartier/jobot"
   :repo "git+https://github.com/brandonchartier/jobot.git"
-  :dependencies ["json"
+  :dependencies ["spork"
                  "sqlite3"
                  "https://github.com/joy-framework/http"
                  "https://github.com/brandonchartier/janet-url"

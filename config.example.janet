@@ -1,5 +1,6 @@
 (def config
   {:debug true
+   :db-path "jobot.db"
    :host "irc.example.org"
    :port "6667"
    :channels ["#example"]

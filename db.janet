@@ -1,4 +1,5 @@
 (import sqlite3 :as sql)
+(import ./config :as c)
 
 (defn- read-file
   [filename]
@@ -16,7 +17,7 @@
 (defn- exec
   [statement &opt ds]
   (default ds {})
-  (let [db (sql/open "jobot.db")
+  (let [db (sql/open (c/config :db-path))
         xs (sql/eval db statement ds)]
     (sql/close db)
     xs))
