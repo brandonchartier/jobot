@@ -1,0 +1,14 @@
+[Unit]
+Description=Jobot IRC Bot
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/jobot
+ExecStart=/opt/jobot/build/jobot
+StateDirectory=jobot
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
