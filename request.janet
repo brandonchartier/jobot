@@ -43,28 +43,43 @@
     (in (sample data) "link")
     _ "not found"))
 
+(def- weather-codes
+  {0 "Clear sky"
+   1 "Mainly clear" 2 "Partly cloudy" 3 "Overcast"
+   45 "Fog" 48 "Depositing rime fog"
+   51 "Light drizzle" 53 "Moderate drizzle" 55 "Dense drizzle"
+   61 "Slight rain" 63 "Moderate rain" 65 "Heavy rain"
+   66 "Light freezing rain" 67 "Heavy freezing rain"
+   71 "Slight snow" 73 "Moderate snow" 75 "Heavy snow"
+   77 "Snow grains"
+   80 "Slight rain showers" 81 "Moderate rain showers" 82 "Violent rain showers"
+   85 "Slight snow showers" 86 "Heavy snow showers"
+   95 "Thunderstorm" 96 "Thunderstorm with slight hail" 99 "Thunderstorm with heavy hail"})
+
 (defn- weather-url
   [lat-long]
-  (url/format
-    :scheme "https"
-    :host "api.darksky.net"
-    :path (string/format
-            "/forecast/%s/%s"
-            (c/config :darksky-key)
-            lat-long)))
+  (let [[lat long] (string/split "," lat-long)]
+    (url/format
+      :scheme "https"
+      :host "api.open-meteo.com"
+      :path "/v1/forecast"
+      :query {:latitude lat
+              :longitude long
+              :current_weather "true"
+              :temperature_unit "fahrenheit"})))
 
 (defn weather
   "Provided the name of a city and its lat,long string,
-   makes a request to the Dark Sky API,
+   makes a request to the Open-Meteo API,
    returning a description of the weather."
   [name lat-long]
   (match (request (weather-url lat-long))
-    {"currently" data}
+    {"current_weather" data}
     (string/format
       "%s: %d° %s"
       name
       (math/round (in data "temperature"))
-      (in data "summary"))
+      (get weather-codes (in data "weathercode") "Unknown"))
     _ "not found"))
 
 (def- news-sources
