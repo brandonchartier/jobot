@@ -5,8 +5,8 @@ An IRC bot written in Janet.
 ## Setup
 
 ```sh
-cp config.example.janet config.janet
-# Edit config.janet with your IRC server, nickname, and API keys
+cp config.example.jdn config.jdn
+# Edit config.jdn with your IRC server, nickname, and API keys
 make run
 ```
 

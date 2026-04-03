@@ -7,6 +7,7 @@ Type=simple
 DynamicUser=yes
 WorkingDirectory=/opt/jobot
 ExecStart=/opt/jobot/build/jobot
+Environment=JOBOT_CONFIG=/var/lib/jobot/config.jdn
 StateDirectory=jobot
 Restart=on-failure
 RestartSec=5
