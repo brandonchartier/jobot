@@ -4,6 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
+DynamicUser=yes
 WorkingDirectory=/opt/jobot
 ExecStart=/opt/jobot/build/jobot
 StateDirectory=jobot
