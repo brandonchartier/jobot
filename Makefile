@@ -1,4 +1,5 @@
 deps:
+	jpm clear-cache
 	jpm deps
 
 build: deps
