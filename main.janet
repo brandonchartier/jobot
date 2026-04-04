@@ -45,8 +45,6 @@
   [config mention stream message]
   (pp message)
   (match message
-    [:ping pong]
-    (irc/write-pong stream pong)
     [:priv _ from to trailing]
     (match (peg/match mention trailing)
       [:cmd cmd :msg msg]
