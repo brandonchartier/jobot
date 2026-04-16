@@ -18,6 +18,8 @@ make run
 - `random <query>` — search the message log
 - `weather` — current weather for configured cities
 
+Any other message directed at the bot will get a markov chain reply.
+
 ## Deployment
 
 ```sh

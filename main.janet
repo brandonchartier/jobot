@@ -38,8 +38,8 @@
     (each city (config :cities)
       (when-let [temp (request/weather (city :name) (city :coords))]
         (irc/write-msg stream to temp)))
-    (member ["markov"] cmd)
-    (irc/write-msg stream to (request/markov-reply chain msg))))
+    true
+    (irc/write-msg stream to (request/markov-reply chain (string cmd " " msg)))))
 
 (defn- read
   "Pattern matches on the result of the IRC message grammar,
