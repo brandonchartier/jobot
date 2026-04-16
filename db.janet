@@ -13,6 +13,9 @@
 (def- sql-select-random
   (read-file "./sql/select-random.sql"))
 
+(def- sql-select-all
+  (read-file "./sql/select-all.sql"))
+
 (defn- exec
   [db-path statement &opt ds]
   (default ds {})
@@ -36,3 +39,7 @@
   [db-path query sent]
   (let [random (exec db-path sql-select-random {:query query :sent sent})]
     (get random 0)))
+
+(defn select-all
+  [db-path]
+  (exec db-path sql-select-all))

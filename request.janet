@@ -1,5 +1,6 @@
 (import ./db)
 (import http)
+(import markov)
 (import spork/json)
 (import url)
 
@@ -104,3 +105,21 @@
       {:sent_by by :message msg}
       (string "<" by "> " msg)
       _ "not found")))
+
+(defn train-chain
+  "Builds a markov chain from all messages in the database."
+  [db-path]
+  (var chain nil)
+  (each row (db/select-all db-path)
+    (set chain (markov/train (row :message) chain)))
+  chain)
+
+(defn train-message
+  "Trains the markov chain with a single new message."
+  [chain message]
+  (markov/train message chain))
+
+(defn markov-reply
+  "Generates a markov chain reply based on input."
+  [chain input]
+  (markov/reply chain input))

@@ -8,7 +8,8 @@
                  "sqlite3"
                  "https://github.com/joy-framework/http"
                  "https://github.com/brandonchartier/janet-url"
-                 "https://github.com/brandonchartier/janet-irc-client"])
+                 "https://github.com/brandonchartier/janet-irc-client"
+                 "https://github.com/brandonchartier/janet-markov"])
 
 (declare-executable
   :name "jobot"

@@ -21,7 +21,7 @@
 
 (defn- reply
   "Replies to messages based on type of command."
-  [config stream from to cmd msg]
+  [config chain stream from to cmd msg]
   (cond
     (member ["echo"] cmd)
     (irc/write-priv stream to from msg)
@@ -37,25 +37,30 @@
     (member ["weather"] cmd)
     (each city (config :cities)
       (when-let [temp (request/weather (city :name) (city :coords))]
-        (irc/write-msg stream to temp)))))
+        (irc/write-msg stream to temp)))
+    (member ["markov"] cmd)
+    (irc/write-msg stream to (request/markov-reply chain msg))))
 
 (defn- read
   "Pattern matches on the result of the IRC message grammar,
    replies based on the command provided to the stream."
-  [config mention stream message]
+  [config chain mention stream message]
   (pp message)
   (match message
     [:priv _ from to trailing]
     (match (peg/match mention trailing)
       [:cmd cmd :msg msg]
-      (reply config stream from to cmd msg)
-      _ (db/insert-log (config :db-path) from to trailing))))
+      (reply config chain stream from to cmd msg)
+      _ (do
+          (db/insert-log (config :db-path) from to trailing)
+          (request/train-message chain trailing)))))
 
 (defn main
   [&]
   (def config (parse (slurp (or (os/getenv "JOBOT_CONFIG") "config.jdn"))))
   (def mention (make-mention-grammar (config :nickname)))
   (db/create-table (config :db-path))
+  (def chain (request/train-chain (config :db-path)))
   (irc/connect
     {:host (config :host)
      :port (config :port)
@@ -63,4 +68,4 @@
      :nickname (config :nickname)
      :username (config :nickname)
      :realname (config :nickname)}
-    (partial read config mention)))
+    (partial read config chain mention)))
