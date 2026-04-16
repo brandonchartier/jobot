@@ -38,7 +38,6 @@
     (each city (config :cities)
       (when-let [temp (request/weather (city :name) (city :coords))]
         (irc/write-msg stream to temp)))
-    true
     (irc/write-msg stream to (request/markov-reply chain (string cmd " " msg)))))
 
 (defn- read
