@@ -11,7 +11,7 @@
                  {:url "https://github.com/brandonchartier/janet-url"
                   :ref "99553df0210bc97813d64e8456e8e7e37c932cdf"}
                  {:url "https://github.com/brandonchartier/janet-irc-client"
-                  :ref "64cc266d20fd783a5db9ba7b0e25337c14568c94"}
+                  :ref "fc5b3af4b9dd8ff587e66f67cac3ae456d8dce88"}
                  {:url "https://github.com/brandonchartier/janet-markov"
                   :ref "fe7ddd99f9928761a19b1b0a3fe4d05545cc19da"}])
 
