@@ -13,7 +13,7 @@
                  {:url "https://github.com/brandonchartier/janet-irc-client"
                   :ref "fc5b3af4b9dd8ff587e66f67cac3ae456d8dce88"}
                  {:url "https://github.com/brandonchartier/janet-markov"
-                  :ref "fe7ddd99f9928761a19b1b0a3fe4d05545cc19da"}])
+                  :ref "ea7b087123fa3b360f34389a4d35f71213c9e964"}])
 
 (declare-executable
   :name "jobot"
