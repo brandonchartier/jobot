@@ -106,12 +106,18 @@
       (string "<" by "> " msg)
       _ "not found")))
 
+(defn- messages [conn offset]
+  (let [batch (db/select-batch conn offset 1000)]
+    (unless (empty? batch)
+      (each row batch (yield (row :message)))
+      (messages conn (+ offset 1000)))))
+
 (defn train-chain
   "Builds a markov chain from all messages in the database."
   [conn]
   (let [chain (markov/new-chain conn)]
     (unless (markov/trained? chain)
-      (markov/train-many (generate [row :in (db/select-all conn)] (row :message)) chain))
+      (markov/train-many (generate (messages conn 0)) chain))
     chain))
 
 (defn train-message

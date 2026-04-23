@@ -1,21 +1,32 @@
 (import sqlite3 :as sql)
 
-(defn- read-file [filename]
-  (string (slurp filename)))
-
-(def- sql-create-table (read-file "./sql/create-table.sql"))
-(def- sql-insert-log (read-file "./sql/insert-log.sql"))
-(def- sql-select-random (read-file "./sql/select-random.sql"))
-(def- sql-select-all (read-file "./sql/select-all.sql"))
-
 (defn create-table [conn]
-  (sql/eval conn sql-create-table))
+  (sql/eval conn
+            ``CREATE TABLE IF NOT EXISTS log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sent_to VARCHAR(128),
+        sent_by VARCHAR(128),
+        message VARCHAR(1024),
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )``))
 
 (defn insert-log [conn by to message]
-  (sql/eval conn sql-insert-log {:to to :by by :message message}))
+  (sql/eval conn
+            ``INSERT INTO log (sent_to, sent_by, message)
+      VALUES (:to, :by, :message)``
+            {:to to :by by :message message}))
 
 (defn select-random [conn query sent]
-  (get (sql/eval conn sql-select-random {:query query :sent sent}) 0))
+  (get (sql/eval conn
+                 ``SELECT * FROM log
+           WHERE sent_to = :sent
+           AND message LIKE :query
+           ORDER BY RANDOM()
+           LIMIT 1``
+                 {:query query :sent sent})
+       0))
 
-(defn select-all [conn]
-  (sql/eval conn sql-select-all))
+(defn select-batch [conn offset limit]
+  (sql/eval conn
+            ``SELECT message FROM log LIMIT :limit OFFSET :offset``
+            {:limit limit :offset offset}))
