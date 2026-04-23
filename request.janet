@@ -117,7 +117,7 @@
   [conn]
   (let [chain (markov/new-chain conn)]
     (unless (markov/trained? chain)
-      (markov/train-many (generate (messages conn 0)) chain))
+      (markov/train-many (fiber/new (fn [] (messages conn 0)) :y) chain))
     chain))
 
 (defn train-message
