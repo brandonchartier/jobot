@@ -50,7 +50,11 @@
       (reply config chain stream from to cmd msg)
       _ (do
           (db/insert-log (chain :conn) from to trailing)
-          (request/train-message chain trailing)))))
+          (request/train-message chain trailing)))
+    [:action _ from to text]
+    (do
+      (db/insert-log (chain :conn) from to text)
+      (request/train-message chain text))))
 
 (defn- read
   [config chain mention stream message]
