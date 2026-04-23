@@ -100,11 +100,10 @@
 (defn select-random
   "Queries DB logs using LIKE."
   [conn query to]
-  (let [q (string "%" query "%")]
-    (match (db/select-random conn q to)
-      {:sent_by by :message msg}
-      (string "<" by "> " msg)
-      _ "not found")))
+  (match (db/select-random conn query to)
+    {:sent_by by :message msg}
+    (string "<" by "> " msg)
+    _ "not found"))
 
 (defn- messages [conn offset]
   (let [batch (db/select-batch conn offset 1000)]

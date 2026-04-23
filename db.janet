@@ -23,7 +23,7 @@
            AND message LIKE :query
            ORDER BY RANDOM()
            LIMIT 1``
-                 {:query query :sent sent})
+                 {:query (string "%" query "%") :sent sent})
        0))
 
 (defn select-batch [conn offset limit]
