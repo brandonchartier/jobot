@@ -1,3 +1,6 @@
+setup:
+	apt-get install -y libcurl4-openssl-dev libsqlite3-dev
+
 deps:
 	jpm clear-cache
 	jpm deps

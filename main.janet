@@ -1,3 +1,4 @@
+(import sqlite3 :as sql)
 (import ./db)
 (import ./request)
 (import irc-client :as irc)
@@ -32,7 +33,7 @@
     (when-let [news (request/news (config :news-key) (config :news-sources))]
       (irc/write-priv stream to from news))
     (member ["random"] cmd)
-    (when-let [log (request/select-random (config :db-path) msg to)]
+    (when-let [log (request/select-random (chain :conn) msg to)]
       (irc/write-msg stream to log))
     (member ["weather"] cmd)
     (each city (config :cities)
@@ -51,15 +52,16 @@
       [:cmd cmd :msg msg]
       (reply config chain stream from to cmd msg)
       _ (do
-          (db/insert-log (config :db-path) from to trailing)
+          (db/insert-log (chain :conn) from to trailing)
           (request/train-message chain trailing)))))
 
 (defn main
   [&]
   (def config (parse (slurp (or (os/getenv "JOBOT_CONFIG") "config.jdn"))))
   (def mention (make-mention-grammar (config :nickname)))
-  (db/create-table (config :db-path))
-  (def chain (request/train-chain (config :db-path)))
+  (def conn (sql/open (config :db-path)))
+  (db/create-table conn)
+  (def chain (request/train-chain conn))
   (irc/connect
     {:host (config :host)
      :port (config :port)

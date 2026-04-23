@@ -99,20 +99,20 @@
 
 (defn select-random
   "Queries DB logs using LIKE."
-  [db-path query to]
+  [conn query to]
   (let [q (string "%" query "%")]
-    (match (db/select-random db-path q to)
+    (match (db/select-random conn q to)
       {:sent_by by :message msg}
       (string "<" by "> " msg)
       _ "not found")))
 
 (defn train-chain
   "Builds a markov chain from all messages in the database."
-  [db-path]
-  (var chain nil)
-  (each row (db/select-all db-path)
-    (set chain (markov/train (row :message) chain)))
-  chain)
+  [conn]
+  (let [chain (markov/new-chain conn)]
+    (unless (markov/trained? chain)
+      (markov/train-many (generate [row :in (db/select-all conn)] (row :message)) chain))
+    chain))
 
 (defn train-message
   "Trains the markov chain with a single new message."
