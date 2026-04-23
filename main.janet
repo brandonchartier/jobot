@@ -41,11 +41,8 @@
         (irc/write-msg stream to temp)))
     (irc/write-msg stream to (request/markov-reply chain (string cmd " " msg)))))
 
-(defn- read
-  "Pattern matches on the result of the IRC message grammar,
-   replies based on the command provided to the stream."
+(defn- dispatch
   [config chain mention stream message]
-  (pp message)
   (match message
     [:priv _ from to trailing]
     (match (peg/match mention trailing)
@@ -54,6 +51,13 @@
       _ (do
           (db/insert-log (chain :conn) from to trailing)
           (request/train-message chain trailing)))))
+
+(defn- read
+  [config chain mention stream message]
+  (when (config :debug) (pp message))
+  (let [[ok err] (protect (dispatch config chain mention stream message))]
+    (unless ok
+      (eprintf "error handling message: %s" err))))
 
 (defn main
   [&]
