@@ -41,6 +41,10 @@
         (irc/write-msg writer to temp)))
     (irc/write-msg writer to (request/markov-reply chain (string cmd " " msg)))))
 
+(defn- observe [chain from to text]
+  (db/insert-log (chain :conn) from to text)
+  (request/train-message chain text))
+
 (defn- dispatch
   [config chain mention writer message]
   (match message
@@ -48,22 +52,17 @@
     (match (peg/match mention trailing)
       [:cmd cmd :msg msg]
       (ev/go (fn []
-        (let [[ok err] (protect (reply config chain writer from to cmd msg))]
-          (unless ok (eprintf "error in reply: %s" err)))))
-      _ (do
-          (db/insert-log (chain :conn) from to trailing)
-          (request/train-message chain trailing)))
+               (try (reply config chain writer from to cmd msg)
+                 ([err] (eprintf "error in reply: %s" err)))))
+      _ (observe chain from to trailing))
     [:action _ from to text]
-    (do
-      (db/insert-log (chain :conn) from to text)
-      (request/train-message chain text))))
+    (observe chain from to text)))
 
 (defn- read
   [config chain mention writer message]
   (when (config :debug) (pp message))
-  (let [[ok err] (protect (dispatch config chain mention writer message))]
-    (unless ok
-      (eprintf "error handling message: %s" err))))
+  (try (dispatch config chain mention writer message)
+    ([err] (eprintf "error handling message: %s" err))))
 
 (defn main
   [&]
