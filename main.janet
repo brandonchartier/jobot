@@ -22,33 +22,33 @@
 
 (defn- reply
   "Replies to messages based on type of command."
-  [config chain stream from to cmd msg]
+  [config chain writer from to cmd msg]
   (cond
     (member ["echo"] cmd)
-    (irc/write-priv stream to from msg)
+    (irc/write-priv writer to from msg)
     (member ["image" "img"] cmd)
     (when-let [url (request/google-image (config :google-key) (config :google-cx) msg)]
-      (irc/write-priv stream to from url))
+      (irc/write-priv writer to from url))
     (member ["news"] cmd)
     (when-let [news (request/news (config :news-key) (config :news-sources))]
-      (irc/write-priv stream to from news))
+      (irc/write-priv writer to from news))
     (member ["random"] cmd)
     (when-let [log (request/select-random (chain :conn) msg to)]
-      (irc/write-msg stream to log))
+      (irc/write-msg writer to log))
     (member ["weather"] cmd)
     (each city (config :cities)
       (when-let [temp (request/weather (city :name) (city :coords))]
-        (irc/write-msg stream to temp)))
-    (irc/write-msg stream to (request/markov-reply chain (string cmd " " msg)))))
+        (irc/write-msg writer to temp)))
+    (irc/write-msg writer to (request/markov-reply chain (string cmd " " msg)))))
 
 (defn- dispatch
-  [config chain mention stream message]
+  [config chain mention writer message]
   (match message
     [:priv _ from to trailing]
     (match (peg/match mention trailing)
       [:cmd cmd :msg msg]
       (ev/go (fn []
-        (let [[ok err] (protect (reply config chain stream from to cmd msg))]
+        (let [[ok err] (protect (reply config chain writer from to cmd msg))]
           (unless ok (eprintf "error in reply: %s" err)))))
       _ (do
           (db/insert-log (chain :conn) from to trailing)
@@ -59,9 +59,9 @@
       (request/train-message chain text))))
 
 (defn- read
-  [config chain mention stream message]
+  [config chain mention writer message]
   (when (config :debug) (pp message))
-  (let [[ok err] (protect (dispatch config chain mention stream message))]
+  (let [[ok err] (protect (dispatch config chain mention writer message))]
     (unless ok
       (eprintf "error handling message: %s" err))))
 
