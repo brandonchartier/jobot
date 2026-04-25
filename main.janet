@@ -47,7 +47,9 @@
     [:priv _ from to trailing]
     (match (peg/match mention trailing)
       [:cmd cmd :msg msg]
-      (reply config chain stream from to cmd msg)
+      (ev/go (fn []
+        (let [[ok err] (protect (reply config chain stream from to cmd msg))]
+          (unless ok (eprintf "error in reply: %s" err)))))
       _ (do
           (db/insert-log (chain :conn) from to trailing)
           (request/train-message chain trailing)))
