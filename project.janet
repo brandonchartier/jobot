@@ -6,8 +6,8 @@
   :repo "git+https://github.com/brandonchartier/jobot.git"
   :dependencies ["spork"
                  "sqlite3"
-                 {:url "https://github.com/joy-framework/http"
-                  :ref "0aa31e4f65756b6882e1e56cbcb585047fe97939"}
+                 {:url "https://github.com/brandonchartier/janet-http"
+                  :ref "1e79af794780fc7f9ab0bccfb76d465272b1838f"}
                  {:url "https://github.com/brandonchartier/janet-url"
                   :ref "99553df0210bc97813d64e8456e8e7e37c932cdf"}
                  {:url "https://github.com/brandonchartier/janet-irc-client"
